@@ -1,1 +1,3 @@
-# dstn-assignment1
+# Dstn-assignment1
+
+A complete memory management implementation.

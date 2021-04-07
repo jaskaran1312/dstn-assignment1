@@ -11,12 +11,14 @@ int fetchL2Cache (long pa, struct Hardware *hardware) {
         if(hardware->l2->sets[setIndex].valid[i] && hardware->l2->sets[setIndex].tags[i] == tag)
             return 0; // hit
     }
-    updateL2Cache(setIndex, tag, hardware);
 
     return 1; //miss
 }
 
-void updateL2Cache(int setIndex, int tag, struct Hardware *hardware) {
+void updateL2Cache(long pa, struct Hardware *hardware) {
+    int setIndex = (pa >> 5) & (0b1111111);
+    int tag = (pa >> 12) & (0b1111111111111);
+    
     if(hardware->l2->sets[setIndex].listCount <= 8) { // when the set is not full
         int freeIndex;
         for(int i=0;i<8;i++) { // finding the free index 

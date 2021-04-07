@@ -1,0 +1,1 @@
+int fetchL2Cache (long pa, struct Hardware *hardware);

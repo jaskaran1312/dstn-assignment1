@@ -3,7 +3,7 @@
 #include "hardware.h"
 #include "l2cache.h"
 
-int fetchL2cache (long pa, struct Hardware *hardware) {
+int fetchL2Cache (long pa, struct Hardware *hardware) {
     int setIndex = (pa >> 5) & (0b1111111);
     int tag = (pa >> 12) & (0b1111111111111);
 

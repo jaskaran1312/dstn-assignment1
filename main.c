@@ -7,6 +7,12 @@ int main(){
 	
 	struct Hardware *hardware = (struct Hardware *) malloc(sizeof(struct Hardware));
 	
+	//l1cache initialization
+	hardware->l1 = (struct L1Cache *) malloc(sizeof(struct L1Cache));
+	for(int i=0;i<128;i++) {
+		hardware->l1->tags[i] = 0;
+		hardware->l1->valid[i] = 0;
+	}
 
 	//l2cache initialization
 	hardware->l2 = (struct L2Cache *) malloc(sizeof(struct L2Cache));

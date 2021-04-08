@@ -23,6 +23,16 @@ int main(){
 		}
 	}
 		
+	
+	//victimcache intialization
+	hardware->victim = (struct VictimCache *) malloc(sizeof(struct VictimCache));
+	for(int i=0;i<8;i++)
+	{
+		hardware->victim->tags[i]=0;
+		hardware->victim->lruCounter[i]=0;
+		hardware->victim->valid[i]=0;
+	}
+
 
 	long pa = 213232321; //random value for now
 	fetchL2Cache (pa, hardware);

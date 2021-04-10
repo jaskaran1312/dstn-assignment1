@@ -1,48 +1,122 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+#include <errno.h>
+
 #include "hardware.h"
+#include "init.h"
+#include "l1cache.h"
+#include "victimcache.h"
 #include "l2cache.h"
+
+
+void simulate(char *fileList[], int numFiles) {
+	int filePos[numFiles];
+
+	for(int i=0;i<numFiles;i++)
+		filePos[i] = 0;
+
+	FILE *fp[numFiles];
+
+	for(int i=0;i<numFiles;i++) 
+		fp[i] = fopen(fileList[i], "r");
+
+	int processCompleted = 0;
+	int currProcess = 0;
+
+	while(1) {
+		
+		for(int i=0;i<2000;i++) {
+			if(filePos[currProcess] == -1) {
+				break;
+			}
+
+			char va[9];
+			fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
+			if(fgets(va, 9, fp[currProcess]) == NULL) {
+				printf("Process %d Completed\n",currProcess+1);
+				processCompleted++;
+				filePos[currProcess] = -1;
+				break;
+			}
+			filePos[currProcess] += 10;
+
+			printf("Process: %d, Logical Address: %s\n",currProcess+1, va);
+			
+			// TODO : 
+			// get linear address
+			// get physical address
+			// simulate in memory management system
+
+		}
+
+		currProcess = (currProcess+1)%numFiles;
+		
+		if(processCompleted == numFiles) {
+			printf("Simulation Completed\n");
+			for(int i=0;i<numFiles;i++)
+				fclose(fp[i]);
+			return;
+		}
+	}
+
+}
 
 int main(){
 	
 	struct Hardware *hardware = (struct Hardware *) malloc(sizeof(struct Hardware));
 	
-	//l1cache initialization
-	hardware->l1 = (struct L1Cache *) malloc(sizeof(struct L1Cache));
-	for(int i=0;i<128;i++) {
-		hardware->l1->tags[i] = 0;
-		hardware->l1->valid[i] = 0;
-	}
+	l1CacheInit(hardware); // l1cache initialization
+	victimCacheInit(hardware); // victimcache intialization
+	l2CacheInit(hardware); // l2cache initialization
+	
+	FILE* out = freopen("logs.txt","w",stdout);
+	
+	DIR *dir;
+	struct dirent *dirEntry;
+	int numFiles = 0;
 
-	//l2cache initialization
-	hardware->l2 = (struct L2Cache *) malloc(sizeof(struct L2Cache));
-	for(int i=0;i<128;i++) {
-		hardware->l2->sets[i].listCount = 0;
-		struct Node *node = (struct Node *) malloc(sizeof(struct Node));
-		node->next = NULL;
-		hardware->l2->sets[i].head = node;
-		hardware->l2->sets[i].tail = node;
-		for(int j=0;j<8;j++) {
-			hardware->l2->sets[i].valid[j] = 0;
-			hardware->l2->sets[i].tags[j] = 0;
-			hardware->l2->sets[i].dirty[j] = 0;
+	dir = opendir("./InputFiles/");
+
+	while ((dirEntry = readdir(dir)) != NULL)
+	{
+		if(dirEntry->d_type != DT_REG)
+			continue;
+		else
+			numFiles++;
+	}
+	printf("Number of Input Files = %d\n", numFiles);
+
+	rewinddir(dir);
+
+	char *fileList[numFiles];
+	int i=0;
+
+	while ((dirEntry = readdir(dir)) != NULL)
+	{
+		if(dirEntry->d_type != DT_REG)
+			continue;
+		else {
+			char path[120] = "InputFiles/";
+			fileList[i] = (char *) malloc (strlen(dirEntry->d_name)+strlen(path)+1);
+			strcat(path, dirEntry->d_name);
+			strncpy (fileList[i], path, strlen(path));
+			fileList[i][strlen(path)] = '\0';
+			i++;
 		}
 	}
-		
-	
-	//victimcache intialization
-	hardware->victim = (struct VictimCache *) malloc(sizeof(struct VictimCache));
-	for(int i=0;i<8;i++)
-	{
-		hardware->victim->tags[i]=0;
-		hardware->victim->lruCounter[i]=0;
-		hardware->victim->valid[i]=0;
+	if(closedir(dir) == -1) {
+		perror("closedir");
+		return 1;
 	}
+	
+	for (int i = 0; i < numFiles; i++)
+		printf("%s\n", fileList[i]);
 
-
-	long pa = 213232321; //random value for now
-	fetchL2Cache (pa, hardware);
-
+	simulate(fileList, numFiles);
+	
+	fclose(out);
 	return 0;
 
 }

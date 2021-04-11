@@ -4,6 +4,7 @@
 #include "l2cache.h"
 
 void fetchData(long pa, struct Hardware* hardware){
+	//TODO statistic variables
 	long retVal; //Will hold the PA of line evicted from L1Cache in case of miss
 
 	//First try L1 cache
@@ -18,11 +19,13 @@ void fetchData(long pa, struct Hardware* hardware){
 		updateL1Cache(pa, hardware);
 		return;
 	}
-
+	//TODO if l1 is invalid
+	//
 	//Miss in Victim; try L2
 	if(!fetchL2Cache(pa, hardware)){
 		//Hit in L2
 		updateL1Cache(pa, hardware);
+		//TODO if l1 is invalid
 		updateVictimCache(retVal, hardware, 1);
 		return;
 	}

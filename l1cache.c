@@ -9,7 +9,10 @@ long fetchL1Cache (long pa, struct Hardware *hardware) {
 
     if(hardware->l1->valid[index] && hardware->l1->tags[index] == tag)
 	    return 0; // hit
-    
+
+    //If Invalid
+    //TODO
+    //
     //Set invalid
     hardware->l1->valid[index] = 0;
     long oldpa = 0;

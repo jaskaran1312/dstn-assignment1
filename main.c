@@ -3,6 +3,35 @@
 #include "hardware.h"
 #include "l2cache.h"
 
+void fetchData(long pa, struct Hardware* hardware){
+	long retVal; //Will hold the PA of line evicted from L1Cache in case of miss
+
+	//First try L1 cache
+	retVal = fetchL1Cache(pa, hardware);
+	if(!retVal)
+		return; //Hit in L1
+
+	//Miss in L1; try Victim cache
+	if(!fetchVictimCache(pa, hardware)){
+		//Hit in Victim
+		updateVictimCache(retVal, hardware, 0);
+		updateL1Cache(pa, hardware);
+		return;
+	}
+
+	//Miss in Victim; try L2
+	if(!fetchL2Cache(pa, hardware)){
+		//Hit in L2
+		updateL1Cache(pa, hardware);
+		updateVictimCache(retVal, hardware, 1);
+		return;
+	}
+
+	//Miss in L2
+
+}
+
+
 int main(){
 	
 	struct Hardware *hardware = (struct Hardware *) malloc(sizeof(struct Hardware));

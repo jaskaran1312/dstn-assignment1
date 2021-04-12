@@ -42,8 +42,7 @@ struct MainMemory {
 	struct PageTable* frames[65536];
 };
 
-struct Hardware {
-	
+struct Hardware {	
 	struct L1Cache *l1;
 	struct L2Cache *l2;
 	struct VictimCache *victim;

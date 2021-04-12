@@ -28,8 +28,18 @@ struct VictimCache {
 	unsigned short valid[8];
 };
 
+struct FrameTable {
+	int pid[65536];
+};
+
+struct PageTable {
+	unsigned short entries[256];
+};
+
 struct MainMemory {
-	//TODO
+	unsigned int freeFrames;
+	unsigned short nextFreeFrame;
+	struct PageTable* frames[65536];
 };
 
 struct Hardware {
@@ -39,4 +49,17 @@ struct Hardware {
 	struct VictimCache *victim;
 	struct MainMemory *mainMemory;
 
+};
+
+struct SegmentTable {
+	unsigned short csBase;
+	unsigned short dsBase;
+	unsigned int csLength;
+	unsigned int dsLength;
+};
+
+struct Process {
+	
+	int pid;
+	struct SegmentTable ldt;
 };

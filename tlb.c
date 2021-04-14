@@ -7,7 +7,7 @@ long fetchTLB(struct Hardware *hardware, long pageNumber, int pid) {
     printf("Checking in TLB...\n");
     for (int i=0;i<32;i++) {
         if(hardware->tlb->valid[i] && hardware->tlb->pid[i] == pid && hardware->tlb->pageNumber[i] == pageNumber) {
-            printf("TLB hit for process: %d & Page Number: %ld\n", pid,pageNumber);
+            printf("TLB hit for Process: %d & Page Number: %ld\n", pid,pageNumber);
             
             // updating LRU square matrix
             for(int j=0;j<32;j++)
@@ -18,7 +18,7 @@ long fetchTLB(struct Hardware *hardware, long pageNumber, int pid) {
             return hardware->tlb->frameNumber[i];
         }
     }
-    printf("TLB miss for process: %d & Page Number: %ld\n", pid,pageNumber);
+    printf("TLB miss for Process: %d & Page Number: %ld\n", pid,pageNumber);
     return -1; // tlb miss
 }
 
@@ -51,7 +51,7 @@ void updateTLB(struct Hardware *hardware, long pageNumber, long frameNumber, int
                 zeroCount++;
         }
         if(zeroCount == 32) {
-            printf("Found a line to evict, PId: %d, Page Number: %ld & Frame Number: %ld\n",hardware->tlb->pid[i], hardware->tlb->pageNumber[i], hardware->tlb->frameNumber[i]);
+            printf("Found a line to evict, Process: %d, Page Number: %ld & Frame Number: %ld\n",hardware->tlb->pid[i], hardware->tlb->pageNumber[i], hardware->tlb->frameNumber[i]);
             hardware->tlb->pid[i] = pid;
             hardware->tlb->pageNumber[i] = pageNumber;
             hardware->tlb->frameNumber[i] = frameNumber;

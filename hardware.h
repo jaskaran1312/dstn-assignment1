@@ -42,12 +42,19 @@ struct MainMemory {
 	struct PageTable* frames[65536];
 };
 
+struct TLB {
+	unsigned int pageNumber[32];
+	unsigned int frameNumber[32];
+	unsigned int pid[32];
+	unsigned int valid[32];
+};
+
 struct Hardware {	
 	struct L1Cache *l1;
 	struct L2Cache *l2;
 	struct VictimCache *victim;
 	struct MainMemory *mainMemory;
-
+	struct TLB *tlb;
 };
 
 struct SegmentTable {

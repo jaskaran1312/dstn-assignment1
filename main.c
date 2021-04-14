@@ -6,12 +6,14 @@
 
 #include "hardware.h"
 #include "init.h"
+#include "tlb.h"
 #include "l1cache.h"
 #include "victimcache.h"
 #include "l2cache.h"
 
+// Process numbering starts from 0
 
-void simulate(char *fileList[], int numFiles) {
+void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 	int filePos[numFiles];
 
 	for(int i=0;i<numFiles;i++)
@@ -35,14 +37,15 @@ void simulate(char *fileList[], int numFiles) {
 			char va[9];
 			fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
 			if(fgets(va, 9, fp[currProcess]) == NULL) {
-				printf("Process %d Completed\n",currProcess+1);
+				printf("Process %d Completed\n",currProcess);
+				invalidateTLB(hardware, currProcess);//invalidate tlb
 				processCompleted++;
 				filePos[currProcess] = -1;
 				break;
 			}
 			filePos[currProcess] += 10;
 
-			printf("Process: %d, Logical Address: %s\n",currProcess+1, va);
+			printf("Process: %d, Logical Address: %s\n",currProcess, va);
 			
 			// TODO : 
 			// get linear address
@@ -67,6 +70,7 @@ int main(){
 	
 	struct Hardware *hardware = (struct Hardware *) malloc(sizeof(struct Hardware));
 	
+	tlbInit(hardware); // tlb initialization
 	l1CacheInit(hardware); // l1cache initialization
 	victimCacheInit(hardware); // victimcache intialization
 	l2CacheInit(hardware); // l2cache initialization
@@ -114,7 +118,7 @@ int main(){
 	for (int i = 0; i < numFiles; i++)
 		printf("%s\n", fileList[i]);
 
-	simulate(fileList, numFiles);
+	simulate(hardware, fileList, numFiles);
 	
 	fclose(out);
 	return 0;

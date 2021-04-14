@@ -3,6 +3,16 @@
 #include"hardware.h"
 #include"init.h"
 
+void tlbInit(struct Hardware *hardware) {
+	hardware->tlb = (struct TLB *) malloc(sizeof(struct TLB));
+	for(int i=0;i<32;i++) {
+		hardware->tlb->frameNumber[i] = -1;
+		hardware->tlb->pageNumber[i] = -1;
+		hardware->tlb->pid[i] = -1;
+		hardware->tlb->valid[i] = 0;
+	}
+}
+
 void l1CacheInit(struct Hardware *hardware) {
     hardware->l1 = (struct L1Cache *) malloc(sizeof(struct L1Cache));
 	for(int i=0;i<128;i++) {

@@ -7,4 +7,4 @@ exe: main.c init.c tlb.c l1cache.c victimcache.c l2cache.c
 
 
 clean:
-		rm -f exe
+		rm -rf exe logs.txt

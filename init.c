@@ -10,6 +10,8 @@ void tlbInit(struct Hardware *hardware) {
 		hardware->tlb->pageNumber[i] = -1;
 		hardware->tlb->pid[i] = -1;
 		hardware->tlb->valid[i] = 0;
+		for(int j=0;j<32;j++)
+			hardware->tlb->lru[i][j] = -1;
 	}
 }
 

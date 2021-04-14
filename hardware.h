@@ -43,10 +43,11 @@ struct MainMemory {
 };
 
 struct TLB {
-	unsigned int pageNumber[32];
-	unsigned int frameNumber[32];
-	unsigned int pid[32];
+	long pageNumber[32];
+	long frameNumber[32];
+	int pid[32];
 	unsigned int valid[32];
+	short lru[32][32];
 };
 
 struct Hardware {	

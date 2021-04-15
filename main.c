@@ -19,13 +19,11 @@ void fetchData(long pa, struct Hardware* hardware){
 		updateL1Cache(pa, hardware);
 		return;
 	}
-	//TODO if l1 is invalid
-	//
+	
 	//Miss in Victim; try L2
 	if(!fetchL2Cache(pa, hardware)){
 		//Hit in L2
 		updateL1Cache(pa, hardware);
-		//TODO if l1 is invalid
 		updateVictimCache(retVal, hardware, 1);
 		return;
 	}
@@ -43,7 +41,6 @@ int main(){
 	hardware->l1 = (struct L1Cache *) malloc(sizeof(struct L1Cache));
 	for(int i=0;i<128;i++) {
 		hardware->l1->tags[i] = 0;
-		hardware->l1->valid[i] = 0;
 	}
 
 	//l2cache initialization

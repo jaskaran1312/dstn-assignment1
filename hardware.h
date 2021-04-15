@@ -15,7 +15,6 @@ struct L2CacheSet {
 
 struct L1Cache {
 	unsigned int tags[128];
-	unsigned short valid[128];
 };
 
 struct L2Cache {

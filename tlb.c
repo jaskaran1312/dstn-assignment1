@@ -7,14 +7,8 @@ long fetchTLB(struct Hardware *hardware, long pageNumber, int pid) {
     printf("Checking in TLB...\n");
     for (int i=0;i<32;i++) {
         if(hardware->tlb->valid[i] && hardware->tlb->pid[i] == pid && hardware->tlb->pageNumber[i] == pageNumber) {
-            printf("TLB hit for Process: %d & Page Number: %ld\n", pid,pageNumber);
-            
-            // updating LRU square matrix
-            for(int j=0;j<32;j++)
-                hardware->tlb->lru[i][j] = 1;
-            for(int j=0;j<32;j++)
-                hardware->tlb->lru[j][i] = 0;
-
+            printf("TLB hit for Process: %d & Page Number: %ld\n", pid,pageNumber);            
+            updateMatrix(hardware, i); // updating LRU square matrix
             return hardware->tlb->frameNumber[i];
         }
     }
@@ -37,6 +31,7 @@ void updateTLB(struct Hardware *hardware, long pageNumber, long frameNumber, int
             hardware->tlb->pageNumber[i] = pageNumber;
             hardware->tlb->frameNumber[i] = frameNumber;
             hardware->tlb->valid[i] = 1;
+            updateMatrix(hardware, i);
             printf("TLB updated\n");
             return;
         }
@@ -55,10 +50,32 @@ void updateTLB(struct Hardware *hardware, long pageNumber, long frameNumber, int
             hardware->tlb->pid[i] = pid;
             hardware->tlb->pageNumber[i] = pageNumber;
             hardware->tlb->frameNumber[i] = frameNumber;
+            updateMatrix(hardware, i);
             printf("TLB updated\n");
             return;
         }
     }
 
+    return;
+}
+
+void updateMatrix(struct Hardware *hardware, int line) { 
+    for(int j=0;j<32;j++)
+        hardware->tlb->lru[line][j] = 1;
+    for(int j=0;j<32;j++)
+        hardware->tlb->lru[j][line] = 0;
+    return;
+}
+
+void invalidateLine(struct Hardware *hardware, long pageNumber, int pid) {
+    for(int i=0;i<32;i++) {
+        if(hardware->tlb->pid[i] == pid && hardware->tlb->pageNumber[i] == pageNumber) {
+            printf("Found the line in TLB to invalidate!\n");
+            hardware->tlb->valid[i] = 0;
+            printf("Invalidated the line with Process: %d and Page Number: %ld\n", pid, pageNumber);
+            return;
+        }
+    }
+    printf("Line not found in TLB to invalidate\n");
     return;
 }

@@ -44,8 +44,6 @@ int main()
 
 	struct Hardware *hardware = (struct Hardware *)malloc(sizeof(struct Hardware));
 
-	init(hardware);
-
 	FILE *out = freopen("logs.txt", "w", stdout);
 
 	DIR *dir;

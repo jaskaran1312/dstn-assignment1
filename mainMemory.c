@@ -43,4 +43,3 @@ short fetchMainMemory(long la, long pdpa, struct Hardware *hardware, struct Proc
 		return -1;
 	}
 }
-}

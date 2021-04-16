@@ -40,6 +40,7 @@ struct MainMemory {
 	unsigned int freeFrames;
 	unsigned short nextFreeFrame;
 	struct PageTable* frames[65536];
+	int lru[65536];
 };
 
 struct TLB {

@@ -12,6 +12,7 @@ int getMMLRU(struct Hardware *hardware) {
             frameNumber = i;
         }
     }
+    printf("Frame Number to be evicted from MM is %d\n", frameNumber);
     return frameNumber;
 }
 

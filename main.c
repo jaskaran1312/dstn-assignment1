@@ -39,10 +39,74 @@ void fetchData(long pa, struct Hardware *hardware)
 	//Miss in L2
 }
 
+// Process numbering starts from 0
+
+void simulate(struct Hardware *hardware, char *fileList[], int numFiles)
+{
+	int filePos[numFiles];
+
+	for (int i = 0; i < numFiles; i++)
+		filePos[i] = 0;
+
+	FILE *fp[numFiles];
+
+	for (int i = 0; i < numFiles; i++)
+		fp[i] = fopen(fileList[i], "r");
+
+	int processCompleted = 0;
+	int currProcess = 0;
+
+	while (1)
+	{
+
+		for (int i = 0; i < 2000; i++)
+		{
+			if (filePos[currProcess] == -1)
+			{
+				break;
+			}
+
+			char va[9];
+			fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
+			if (fgets(va, 9, fp[currProcess]) == NULL)
+			{
+				printf("Process %d Completed\n", currProcess);
+				invalidateTLB(hardware, currProcess); //invalidate tlb
+				processCompleted++;
+				filePos[currProcess] = -1;
+				break;
+			}
+			filePos[currProcess] += 10;
+
+			printf("Process: %d, Logical Address: %s\n", currProcess, va);
+
+			// TODO :
+			// get linear address
+			// get physical address
+			// simulate in memory management system
+		}
+
+		currProcess = (currProcess + 1) % numFiles;
+
+		if (processCompleted == numFiles)
+		{
+			printf("Simulation Completed\n");
+			for (int i = 0; i < numFiles; i++)
+				fclose(fp[i]);
+			return;
+		}
+	}
+}
+
 int main()
 {
 
 	struct Hardware *hardware = (struct Hardware *)malloc(sizeof(struct Hardware));
+
+	tlbInit(hardware);		   // tlb initialization
+	l1CacheInit(hardware);	   // l1cache initialization
+	victimCacheInit(hardware); // victimcache intialization
+	l2CacheInit(hardware);	   // l2cache initialization
 
 	FILE *out = freopen("logs.txt", "w", stdout);
 

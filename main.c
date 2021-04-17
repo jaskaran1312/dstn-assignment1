@@ -38,10 +38,10 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 		process[i]->pid = i;
 		process[i]->state = 1;
 		process[i]->ldt = (struct SegmentTable *) malloc(sizeof(struct SegmentTable));
-		process[i]->ldt->csBase = 0;
-		process[i]->ldt->csLength = 0;
-		process[i]->ldt->dsBase = 0;
-		process[i]->ldt->dsLength = 0;
+		process[i]->ldt->csBase = -1;
+		process[i]->ldt->csLength = -1;
+		process[i]->ldt->dsBase = -1;
+		process[i]->ldt->dsLength = -1;
 	}
 	
 	while(1) {

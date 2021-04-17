@@ -71,5 +71,6 @@ struct SegmentTable {
 struct Process {
 	
 	int pid;
-	struct SegmentTable ldt;
+	struct SegmentTable *ldt;
+	short state; // Thrashing: 0 -> suspended, 1 -> active
 };

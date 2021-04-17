@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "hardware.h"
 #include "init.h"
@@ -30,20 +31,40 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 	int processCompleted = 0;
 	int currProcess = 0;
 	uint32_t instructionCount = 0;
+
+	struct Process *process[numFiles];
+	for(int i=0;i<numFiles;i++) {
+		process[i] = (struct Process *) malloc(sizeof(struct Process));
+		process[i]->pid = i;
+		process[i]->state = 1;
+		process[i]->ldt = (struct SegmentTable *) malloc(sizeof(struct SegmentTable));
+		process[i]->ldt->csBase = 0;
+		process[i]->ldt->csLength = 0;
+		process[i]->ldt->dsBase = 0;
+		process[i]->ldt->dsLength = 0;
+	}
 	
 	while(1) {
 		
 		for(int i=0;i<2000;i++) {
-			if(filePos[currProcess] == -1) {
+			if(filePos[currProcess] == -1 || process[currProcess]->state == 0) { 
 				break;
 			}
 
 			instructionCount++;
+
 			if(instructionCount%5000 == 0)
 				shiftMMLRU(hardware);
 			if(instructionCount%50000 == 0) {
 				if(isThrashing(hardware)) {
-					// TODO
+					short processToSuspend = rand()%numFiles;
+					process[processToSuspend]->state = 0;
+				}
+				else {
+					for(int i=0;i<numFiles;i++) {
+						if(process[i]->state == 0) 
+							process[i]->state = 1;
+					}
 				}
 			}
 				

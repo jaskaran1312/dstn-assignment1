@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "hardware.h"
 #include "init.h"
@@ -11,6 +12,7 @@
 #include "victimcache.h"
 #include "l2cache.h"
 #include "lru.h"
+#include "thrashing.h"
 
 // Process numbering starts from 0
 
@@ -27,7 +29,8 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
 	int processCompleted = 0;
 	int currProcess = 0;
-
+	uint32_t instructionCount = 0;
+	
 	while(1) {
 		
 		for(int i=0;i<2000;i++) {
@@ -35,6 +38,15 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 				break;
 			}
 
+			instructionCount++;
+			if(instructionCount%5000 == 0)
+				shiftMMLRU(hardware);
+			if(instructionCount%50000 == 0) {
+				if(isThrashing(hardware)) {
+					// TODO
+				}
+			}
+				
 			char va[9];
 			fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
 			if(fgets(va, 9, fp[currProcess]) == NULL) {

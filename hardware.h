@@ -30,6 +30,7 @@ struct VictimCache {
 
 struct FrameTable {
 	int pid[65536];
+	int initialFrameAlloc;
 };
 
 struct PageTable {
@@ -37,8 +38,6 @@ struct PageTable {
 };
 
 struct MainMemory {
-	unsigned int freeFrames;
-	unsigned short nextFreeFrame;
 	struct PageTable* frames[65536];
 	int lru[65536];
 };
@@ -57,6 +56,7 @@ struct Hardware {
 	struct VictimCache *victim;
 	struct MainMemory *mainMemory;
 	struct TLB *tlb;
+	struct FrameTable *frametable;
 };
 
 struct SegmentTable {

@@ -74,6 +74,8 @@ int main(){
 	l1CacheInit(hardware); // l1cache initialization
 	victimCacheInit(hardware); // victimcache intialization
 	l2CacheInit(hardware); // l2cache initialization
+	frameTableInit(hardware); //frameTable initialization
+	
 	
 	FILE* out = freopen("logs.txt","w",stdout);
 	

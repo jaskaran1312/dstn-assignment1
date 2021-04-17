@@ -10,6 +10,7 @@
 #include "l1cache.h"
 #include "victimcache.h"
 #include "l2cache.h"
+#include "lru.h"
 
 // Process numbering starts from 0
 

@@ -1,2 +1,2 @@
-int fetchL2Cache (long pa, struct Hardware *hardware);
-void updateL2Cache(long pa, struct Hardware *hardware);
+int fetchL2Cache (int64_t pa, struct Hardware *hardware);
+void updateL2Cache(int64_t pa, struct Hardware *hardware);

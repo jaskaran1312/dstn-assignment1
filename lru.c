@@ -3,9 +3,9 @@
 #include "hardware.h"
 #include "lru.h"
 
-int getMMLRU(struct Hardware *hardware) {
-    int frameNumber;
-    int minLRU=__INT_MAX__;
+int64_t getMMLRU(struct Hardware *hardware) {
+    int64_t frameNumber;
+    int64_t minLRU=__INT_MAX__;
     for(int i=0;i<65536;i++) {
         if(hardware->mainMemory->lru[i] <= minLRU){
             minLRU = hardware->mainMemory->lru[i];
@@ -28,7 +28,7 @@ void shiftMMLRU(struct Hardware *hardware) {
     return;
 }
 
-void updateMMLRU(struct Hardware *hardware, int frameNumber) {
+void updateMMLRU(struct Hardware *hardware, int64_t frameNumber) {
     hardware->mainMemory->lru[frameNumber] = hardware->mainMemory->lru[frameNumber] | 0x8000;
     return;
 }

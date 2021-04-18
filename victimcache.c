@@ -3,10 +3,10 @@
 #include "hardware.h"
 #include "victimcache.h"
 
-int fetchVictimCache(long pa, struct Hardware *hardware)
+int fetchVictimCache(int64_t pa, struct Hardware *hardware)
 {
     printf("fetch from victim cache\n");
-    int tag = (pa >> 5) & (0xfffff);
+    int64_t tag = (pa >> 5) & (0xfffff);
 
     for (int i = 0; i < 8; i++)
     {
@@ -19,9 +19,9 @@ int fetchVictimCache(long pa, struct Hardware *hardware)
     return 1;
 }
 
-void updateVictimCache(long pa, struct Hardware *hardware, int method)
+void updateVictimCache(int64_t pa, struct Hardware *hardware, int method)
 {
-    printf("Updating victim cache with %ld\n", pa);
+    printf("Updating victim cache with %lld\n", pa);
 
     //method=0 implies MRU replacement, method=1 implies LRU replacement
     if (method == 0)

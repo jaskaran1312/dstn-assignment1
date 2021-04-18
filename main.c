@@ -19,6 +19,8 @@
 #include "tlb.h"
 #include "victimcache.h"
 
+#define MAX 18446744073709551615
+
 void saveResult() {
     FILE *fptr = fopen("result.txt", "w");
     if (fptr == NULL) {
@@ -46,7 +48,7 @@ void saveResult() {
 
 }
 
-void fetchData(long pa, struct Hardware *hardware) {
+void fetchData(int64_t pa, struct Hardware *hardware) {
 
     //First try L1 cache
     l1References++;
@@ -98,7 +100,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
     int processCompleted = 0;
     int currProcess = 0;
-    uint32_t instructionCount = 0;
+    int64_t instructionCount = 0;
 
     struct Process *process[numFiles];
     for (int i = 0; i < numFiles; i++)
@@ -145,38 +147,42 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
             printf("Process: %d, Logical Address: %s\n", currProcess, va);
 			fflush(stdout);
-            long virtualAddress;
-            sscanf(va, "%lx", &virtualAddress);
+            int64_t virtualAddress;
+            sscanf(va, "%llx", &virtualAddress);
 
-            printf("Virtual address: %ld\n", virtualAddress);
+            printf("Virtual address: %lld\n", virtualAddress);
 			fflush(stdout);
 
             // Fetch base from the segment table
-            long pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
-			fflush(stdout);
+            int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
+			printf("Base address %lld\n", pdpa);
+            fflush(stdout);
 			
 			// Fetch linear address
-            long la = fetchLinearAddress(virtualAddress);
-			printf("Linear address %ld\n", la);
+            int64_t la = fetchLinearAddress(virtualAddress);
+			printf("Linear address %lld\n", la);
 			fflush(stdout);
 
             tlbReferences++;
-            long pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
-            
+            int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
+            printf("pa from tlb %lld\n", pa);
+			fflush(stdout);
             tlbHit++;
             // Fetch physical address
             if (pa == -1){
                 tlbHit--;
 
-                while(pa==-1){
+                while(pa == -1){
+                    
                     pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
                     pageFault++;
+                    printf("PAGE FAULT\n");
+			        fflush(stdout);
                 }
                     
             }
             
-            
-            printf("Physical address %ld\n", pa);
+            printf("Physical address %lld\n", pa);
 			fflush(stdout);
 			
 			// Update TLB

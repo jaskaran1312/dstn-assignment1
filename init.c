@@ -81,7 +81,7 @@ void mainMemoryInit(struct Hardware *hardware)
 
 }
 
-struct Process *processInit(int pid) 
+struct Process *processInit(int64_t pid) 
 {
 	struct Process *process = (struct Process *)malloc(sizeof(struct Process));
 	process->pid = pid;

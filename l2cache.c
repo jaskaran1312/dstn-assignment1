@@ -3,9 +3,9 @@
 #include "hardware.h"
 #include "l2cache.h"
 
-int fetchL2Cache (long pa, struct Hardware *hardware) {
-    int setIndex = (pa >> 5) & (0b1111111);
-    int tag = (pa >> 12) & (0b1111111111111);
+int fetchL2Cache (int64_t pa, struct Hardware *hardware) {
+    int64_t setIndex = (pa >> 5) & (0b1111111);
+    int64_t tag = (pa >> 12) & (0b1111111111111);
 
     for(int i=0;i<8;i++) {
         if(hardware->l2->sets[setIndex].valid[i] && hardware->l2->sets[setIndex].tags[i] == tag)
@@ -15,9 +15,9 @@ int fetchL2Cache (long pa, struct Hardware *hardware) {
     return 1; //miss
 }
 
-void updateL2Cache(long pa, struct Hardware *hardware) {
-    int setIndex = (pa >> 5) & (0b1111111);
-    int tag = (pa >> 12) & (0b1111111111111);
+void updateL2Cache(int64_t pa, struct Hardware *hardware) {
+    int64_t setIndex = (pa >> 5) & (0b1111111);
+    int64_t tag = (pa >> 12) & (0b1111111111111);
     
     if(hardware->l2->sets[setIndex].listCount <= 8) { // when the set is not full
         int freeIndex;

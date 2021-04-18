@@ -1,2 +1,2 @@
-long fetchBase(long va, struct Process *process, struct Hardware *hardware);
-long fetchLinearAddress(long va);
+int64_t fetchBase(int64_t va, struct Process *process, struct Hardware *hardware);
+int64_t fetchLinearAddress(int64_t va);

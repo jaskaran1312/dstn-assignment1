@@ -1,1 +1,1 @@
-long fetchMainMemory(long la, long pdpa, struct Hardware *hardware, struct Process *process);
+int64_t fetchMainMemory(int64_t la, int64_t pdpa, struct Hardware *hardware, struct Process *process);

@@ -10,4 +10,4 @@ exe: main.c init.c tlb.c l1cache.c victimcache.c l2cache.c lru.c thrashing.c
 
 
 clean:
-		rm -rf exe logs.txt
+		rm -rf exe logs.txt result.txt

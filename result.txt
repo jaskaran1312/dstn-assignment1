@@ -9,9 +9,9 @@ Hit Ratio in L1 Cache: 0.965373
 Number of Hits in Victim Cache: 1443
 Number of References in Victim Cache: 14243
 Hit Ratio in Victim Cache: 0.101313
-Number of Hits in L2 Cache: 3378
+Number of Hits in L2 Cache: 3386
 Number of References in L2 Cache: 12800
-Hit Ratio in L2 Cache: 0.263906
+Hit Ratio in L2 Cache: 0.264531
 Number of Context Switches: 556
 Number of Page Faults: 236968
 Number of times Thrashing occured: 0

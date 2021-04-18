@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "hardware.h"
 
+#define COUNT 15000
 /*
 To detect thrashing, we are using the same LRU bits of Main Memory.
 The limitation here is the number of counters and so the approximation is as follows:
@@ -18,7 +19,7 @@ short isThrashing(struct Hardware *hardware) {
             workingSetCount++; 
     }
 
-    if(workingSetCount > 32000) {
+    if(workingSetCount > COUNT) {
         printf("Thrashing Detected\n");
         return 1;
     }

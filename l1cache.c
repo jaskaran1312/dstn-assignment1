@@ -6,8 +6,8 @@
 
 long fetchL1Cache(long pa, struct Hardware *hardware)
 {
-    int index = (pa >> 5) & (0b1111111);
-    int tag = (pa >> 12) & (0b1111111111111);
+    int index = (pa >> 5) & (0x7f);
+    int tag = (pa >> 12) & (0x1fff);
 
     if (hardware->l1->tags[index] == tag)
         return 0; // hit
@@ -26,7 +26,7 @@ void updateL1Cache(long pa, struct Hardware *hardware, int fromVictim)
     if (hardware->l1->tags[index] != -1) //-1 => empty => placement => no need to update victim cache
     {
         oldpa = oldpa | (hardware->l1->tags[index] << 12) | (index << 5);
-        updateVictimCache(oldpa, hardware, fromVictim);
+        updateVictimCache(oldpa, hardware, !fromVictim);
     }
 
     //set tag bits

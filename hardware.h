@@ -1,3 +1,5 @@
+#ifndef HARDWARE
+#define HARDWARE
 
 #include <inttypes.h>
 
@@ -88,3 +90,5 @@ struct Process
 	struct SegmentTable *ldt;
 	short state; // Thrashing: 0 -> suspended, 1 -> active
 };
+
+#endif

@@ -81,9 +81,9 @@ void mainMemoryInit(struct Hardware *hardware)
 
 }
 
-void processInit(struct Process *process, int pid) 
+struct Process *processInit(int pid) 
 {
-	process = (struct Process *)malloc(sizeof(struct Process));
+	struct Process *process = (struct Process *)malloc(sizeof(struct Process));
 	process->pid = pid;
 	process->state = 1;
 	process->ldt = (struct SegmentTable *)malloc(sizeof(struct SegmentTable));
@@ -91,4 +91,5 @@ void processInit(struct Process *process, int pid)
 	process->ldt->csLength = -1;
 	process->ldt->dsBase = -1;
 	process->ldt->dsLength = -1;
+	return process;
 }

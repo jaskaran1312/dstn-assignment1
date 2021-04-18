@@ -5,7 +5,8 @@
 
 int fetchVictimCache(long pa, struct Hardware *hardware)
 {
-    int tag = (pa >> 5) & (0b11111111111111111111);
+    printf("fetch from victim cache\n");
+    int tag = (pa >> 5) & (0xfffff);
 
     for (int i = 0; i < 8; i++)
     {
@@ -20,6 +21,8 @@ int fetchVictimCache(long pa, struct Hardware *hardware)
 
 void updateVictimCache(long pa, struct Hardware *hardware, int method)
 {
+    printf("Updating victim cache with %ld\n", pa);
+
     //method=0 implies MRU replacement, method=1 implies LRU replacement
     if (method == 0)
     {
@@ -28,7 +31,7 @@ void updateVictimCache(long pa, struct Hardware *hardware, int method)
             if (hardware->victim->lruCounter[i] == 7)
             {
                 //replace MRU element which has been moved to L1 (because hit)
-                hardware->victim->tags[i] = (pa >> 5) & (0b11111111111111111111);
+                hardware->victim->tags[i] = (pa >> 5) & (0xfffff);
                 hardware->victim->valid[i] = 1;
                 break;
             }
@@ -40,7 +43,7 @@ void updateVictimCache(long pa, struct Hardware *hardware, int method)
         {
             if (hardware->victim->lruCounter[i] == 0)
             {
-                hardware->victim->tags[i] = (pa >> 5) & (0b11111111111111111111);
+                hardware->victim->tags[i] = (pa >> 5) & (0xfffff);
                 hardware->victim->valid[i] = 1;
                 updateLRU(hardware, i);
                 //make this new element MRU

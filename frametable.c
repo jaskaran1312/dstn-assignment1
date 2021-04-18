@@ -1,5 +1,5 @@
-#include "frametable.h"
 #include "hardware.h"
+#include "frametable.h"
 #include "lru.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +24,7 @@ int allocateNewFrame(struct Process *process, struct Hardware *hardware) {
     if (hardware->frametable->initialFrameAlloc < 65536) //there are free frames
     {
         temp = hardware->frametable->initialFrameAlloc; // allocate next free frame
+        hardware->mainMemory->frames[temp] =  (struct PageTable *) malloc(sizeof(struct PageTable));
         hardware->frametable->initialFrameAlloc++;
     } else {
         temp = getMMLRU(hardware); //allocate LRU

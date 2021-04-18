@@ -17,9 +17,14 @@ int getMMLRU(struct Hardware *hardware) {
 }
 
 void shiftMMLRU(struct Hardware *hardware) {
+    
+    printf("Start Shifted MMLRU\n");
+    fflush(stdout);
     for(int i=0;i<65536;i++) {
         hardware->mainMemory->lru[i] = hardware->mainMemory->lru[i] >> 1;
     }
+    printf("Shifted MMLRU\n");
+    fflush(stdout);
     return;
 }
 

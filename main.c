@@ -1,11 +1,12 @@
 #include <dirent.h>
 #include <errno.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#include "main.h"
 #include "hardware.h"
 #include "init.h"
 #include "l1cache.h"
@@ -16,6 +17,33 @@
 #include "thrashing.h"
 #include "tlb.h"
 #include "victimcache.h"
+
+void saveResult() {
+    FILE *fptr = fopen("result.txt", "w");
+    if (fptr == NULL)
+    {
+        printf("Could not open result.txt\n");
+        return;
+    }
+    fprintf(fptr, "-----Statistics-----\n\n");
+    fprintf(fptr, "Number of Hits in TLB: %" PRIu32 "\n",tlbHit);
+    fprintf(fptr, "Number of References in TLB: %" PRIu32 "\n",tlbReferences);
+    fprintf(fptr, "Hit Ratio in TLB: %f\n",(double)tlbHit/(double)tlbReferences);
+    fprintf(fptr, "Number of Hits in Victim Cache: %" PRIu32 "\n",victimCacheHit);
+    fprintf(fptr, "Number of Hits in L1 Cache: %" PRIu32 "\n",l1Hit);
+    fprintf(fptr, "Number of References in L1 Cache: %" PRIu32 "\n",l1References);
+    fprintf(fptr, "Hit Ratio in L1 Cache: %f\n",(double)l1Hit/(double)l1References);
+    fprintf(fptr, "Number of Hits in Victim Cache: %" PRIu32 "\n",victimCacheHit);
+    fprintf(fptr, "Number of References in Victim Cache: %" PRIu32 "\n",victimCacheReferences);
+    fprintf(fptr, "Hit Ratio in Victim Cache: %f\n",(double)victimCacheHit/(double)victimCacheReferences);
+    fprintf(fptr, "Number of Hits in L2 Cache: %" PRIu32 "\n",l2Hit);
+    fprintf(fptr, "Number of References in L2 Cache: %" PRIu32 "\n",l2References);
+    fprintf(fptr, "Hit Ratio in L2 Cache: %f\n",(double)l2Hit/(double)l2References);
+    fprintf(fptr, "Number of Context Switches: %" PRIu32 "\n",contextSwitch);
+    fprintf(fptr, "Number of Page Faults: %" PRIu32 "\n",pageFault);
+    fprintf(fptr, "Number of times Thrashing occured: %" PRIu8 "\n",thrashing);
+    fclose(fptr);
+}
 
 void fetchData(long pa, struct Hardware *hardware) {
     //TODO statistic variables
@@ -61,16 +89,8 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
     uint32_t instructionCount = 0;
 
     struct Process *process[numFiles];
-    for (int i = 0; i < numFiles; i++) {
-        process[i] = (struct Process *)malloc(sizeof(struct Process));
-        process[i]->pid = i;
-        process[i]->state = 1;
-        process[i]->ldt = (struct SegmentTable *)malloc(sizeof(struct SegmentTable));
-        process[i]->ldt->csBase = -1;
-        process[i]->ldt->csLength = -1;
-        process[i]->ldt->dsBase = -1;
-        process[i]->ldt->dsLength = -1;
-    }
+    for (int i = 0; i < numFiles; i++) 
+        processInit(process[i], i);
 
     while (1) {
 
@@ -126,6 +146,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
             printf("Simulation Completed\n");
             for (int i = 0; i < numFiles; i++)
                 fclose(fp[i]);
+            saveResult();
             return;
         }
     }

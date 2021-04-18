@@ -10,6 +10,7 @@
 #include "l1cache.h"
 #include "victimcache.h"
 #include "l2cache.h"
+#include "lru.h"
 #include "mainMemory.h"
 
 void fetchData(long pa, struct Hardware *hardware)
@@ -38,6 +39,7 @@ void fetchData(long pa, struct Hardware *hardware)
 
 	//Miss in L2
 }
+
 
 // Process numbering starts from 0
 

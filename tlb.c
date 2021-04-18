@@ -7,12 +7,12 @@ int64_t fetchTLB(struct Hardware *hardware, int64_t pageNumber, int64_t pid) {
     printf("Checking in TLB...\n");
     for (int i=0;i<32;i++) {
         if(hardware->tlb->valid[i] && hardware->tlb->pid[i] == pid && hardware->tlb->pageNumber[i] == pageNumber) {
-            printf("TLB hit for Process: %d & Page Number: %lld\n", pid,pageNumber);            
+            printf("TLB hit for Process: %ld & Page Number: %ld\n", pid,pageNumber);            
             updateMatrix(hardware, i); // updating LRU square matrix
             return hardware->tlb->frameNumber[i];
         }
     }
-    printf("TLB miss for Process: %d & Page Number: %lld\n", pid,pageNumber);
+    printf("TLB miss for Process: %ld & Page Number: %ld\n", pid,pageNumber);
     return -1; // tlb miss
 }
 
@@ -46,7 +46,7 @@ void updateTLB(struct Hardware *hardware, int64_t pageNumber, int64_t frameNumbe
                 zeroCount++;
         }
         if(zeroCount == 32) {
-            printf("Found a line to evict, Process: %d, Page Number: %lld & Frame Number: %lld\n",hardware->tlb->pid[i], hardware->tlb->pageNumber[i], hardware->tlb->frameNumber[i]);
+            printf("Found a line to evict, Process: %ld, Page Number: %ld & Frame Number: %ld\n",hardware->tlb->pid[i], hardware->tlb->pageNumber[i], hardware->tlb->frameNumber[i]);
             hardware->tlb->pid[i] = pid;
             hardware->tlb->pageNumber[i] = pageNumber;
             hardware->tlb->frameNumber[i] = frameNumber;
@@ -72,7 +72,7 @@ void invalidateLine(struct Hardware *hardware, int64_t pageNumber, int64_t pid) 
         if(hardware->tlb->pid[i] == pid && hardware->tlb->pageNumber[i] == pageNumber) {
             printf("Found the line in TLB to invalidate!\n");
             hardware->tlb->valid[i] = 0;
-            printf("Invalidated the line with Process: %d and Page Number: %lld\n", pid, pageNumber);
+            printf("Invalidated the line with Process: %ld and Page Number: %ld\n", pid, pageNumber);
             return;
         }
     }

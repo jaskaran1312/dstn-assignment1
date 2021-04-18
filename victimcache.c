@@ -25,7 +25,7 @@ int fetchVictimCache(int64_t pa, struct Hardware *hardware)
 
 void updateVictimCache(int64_t pa, struct Hardware *hardware, int method)
 {
-    printf("Updating victim cache with %lld\n", pa);
+    printf("Updating victim cache with %ld\n", pa);
 
     //method=0 implies MRU replacement, method=1 implies LRU replacement
     if (method == 0)

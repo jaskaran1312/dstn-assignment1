@@ -28,7 +28,7 @@ void updateL2Cache(int64_t pa, struct Hardware *hardware) {
     int64_t setIndex = (pa >> 5) & (0x7f);
     int64_t tag = (pa >> 12) & (0x1fff);
     
-    printf("SetIndex :%lld, tag: %lld\n",setIndex, tag);
+    printf("SetIndex :%ld, tag: %ld\n",setIndex, tag);
     fflush(stdout);
     if(hardware->l2->sets[setIndex].listCount < 8) { // when the set is not full
         printf("Set is not full\n");

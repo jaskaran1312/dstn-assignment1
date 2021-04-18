@@ -45,7 +45,7 @@ void saveResult() {
     fprintf(fptr, "Number of times Thrashing occured: %" PRIu8 "\n", thrashing);
 
     fclose(fptr);
-
+    return;
 }
 
 void fetchData(int64_t pa, struct Hardware *hardware) {
@@ -100,7 +100,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
     int processCompleted = 0;
     int currProcess = 0;
-    int64_t instructionCount = 0;
+    uint32_t instructionCount = 0;
 
     struct Process *process[numFiles];
     for (int i = 0; i < numFiles; i++)
@@ -148,24 +148,24 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
             printf("Process: %d, Logical Address: %s\n", currProcess, va);
 			fflush(stdout);
             int64_t virtualAddress;
-            sscanf(va, "%llx", &virtualAddress);
+            sscanf(va, "%lx", &virtualAddress);
 
-            printf("Virtual address: %lld\n", virtualAddress);
+            printf("Virtual address: %ld\n", virtualAddress);
 			fflush(stdout);
 
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
-			printf("Base address %lld\n", pdpa);
+			printf("Base address %ld\n", pdpa);
             fflush(stdout);
 			
 			// Fetch linear address
             int64_t la = fetchLinearAddress(virtualAddress);
-			printf("Linear address %lld\n", la);
+			printf("Linear address %ld\n", la);
 			fflush(stdout);
 
             tlbReferences++;
             int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
-            printf("pa from tlb %lld\n", pa);
+            printf("pa from tlb %ld\n", pa);
 			fflush(stdout);
             tlbHit++;
             // Fetch physical address
@@ -182,7 +182,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
                     
             }
             
-            printf("Physical address %lld\n", pa);
+            printf("Physical address %ld\n", pa);
 			fflush(stdout);
 			
 			// Update TLB
@@ -218,6 +218,12 @@ int main() {
     mainMemoryInit(hardware);  // mainmemory initialization
     l2CacheInit(hardware);     // l2cache initialization
     frameTableInit(hardware);  //frameTable initialization
+
+    printf("##############################################\n");
+    printf("########## Memory Management System ##########\n");
+    printf("##############################################\n\n");
+    printf("For Debugging check logs.txt\nFor Results check result.txt\n\n");
+    printf("Simulation Running...\n\n");
 
     FILE *out = freopen("logs.txt", "w", stdout);	
 	
@@ -265,5 +271,8 @@ int main() {
     simulate(hardware, fileList, numFiles);
 
     fclose(out);
+
+    freopen("/dev/tty", "a", stdout);
+    printf("Simulation Completed!\n");
     return 0;
 }

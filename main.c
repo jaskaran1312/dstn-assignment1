@@ -3,6 +3,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdint.h>
+#include <time.h>
 
 #include "hardware.h"
 #include "init.h"
@@ -11,6 +13,7 @@
 #include "victimcache.h"
 #include "l2cache.h"
 #include "lru.h"
+#include "thrashing.h"
 #include "mainMemory.h"
 
 void fetchData(long pa, struct Hardware *hardware)
@@ -57,17 +60,44 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles)
 
 	int processCompleted = 0;
 	int currProcess = 0;
+	uint32_t instructionCount = 0;
 
-	while (1)
-	{
-
-		for (int i = 0; i < 2000; i++)
-		{
-			if (filePos[currProcess] == -1)
-			{
+	struct Process *process[numFiles];
+	for(int i=0;i<numFiles;i++) {
+		process[i] = (struct Process *) malloc(sizeof(struct Process));
+		process[i]->pid = i;
+		process[i]->state = 1;
+		process[i]->ldt = (struct SegmentTable *) malloc(sizeof(struct SegmentTable));
+		process[i]->ldt->csBase = -1;
+		process[i]->ldt->csLength = -1;
+		process[i]->ldt->dsBase = -1;
+		process[i]->ldt->dsLength = -1;
+	}
+	
+	while(1) {
+		
+		for(int i=0;i<2000;i++) {
+			if(filePos[currProcess] == -1 || process[currProcess]->state == 0) { 
 				break;
 			}
 
+			instructionCount++;
+
+			if(instructionCount%5000 == 0)
+				shiftMMLRU(hardware);
+			if(instructionCount%50000 == 0) {
+				if(isThrashing(hardware)) {
+					short processToSuspend = rand()%numFiles;
+					process[processToSuspend]->state = 0;
+				}
+				else {
+					for(int i=0;i<numFiles;i++) {
+						if(process[i]->state == 0) 
+							process[i]->state = 1;
+					}
+				}
+			}
+				
 			char va[9];
 			fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
 			if (fgets(va, 9, fp[currProcess]) == NULL)

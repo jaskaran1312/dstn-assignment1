@@ -1,5 +1,7 @@
-struct Node
-{
+
+#include <stdint.h>
+
+struct Node {
 	short index;
 	struct Node *next;
 };
@@ -47,7 +49,8 @@ struct MainMemory
 	unsigned int freeFrames;
 	unsigned short nextFreeFrame;
 	struct PageTable* frames[65536];
-	u_int16_t lru[65536];
+
+	uint16_t lru[65536];
 
 };
 
@@ -82,5 +85,6 @@ struct Process
 {
 
 	int pid;
-	struct SegmentTable ldt;
+	struct SegmentTable *ldt;
+	short state; // Thrashing: 0 -> suspended, 1 -> active
 };

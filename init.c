@@ -80,3 +80,15 @@ void mainMemoryInit(struct Hardware *hardware)
 	hardware->mainMemory->nextFreeFrame = 0;
 
 }
+
+void processInit(struct Process *process, int pid) 
+{
+	process = (struct Process *)malloc(sizeof(struct Process));
+	process->pid = pid;
+	process->state = 1;
+	process->ldt = (struct SegmentTable *)malloc(sizeof(struct SegmentTable));
+	process->ldt->csBase = -1;
+	process->ldt->csLength = -1;
+	process->ldt->dsBase = -1;
+	process->ldt->dsLength = -1;
+}

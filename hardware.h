@@ -1,5 +1,5 @@
 
-#include <stdint.h>
+#include <inttypes.h>
 
 struct Node {
 	short index;

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 int64_t fetchMainMemory(int64_t la, int64_t pdpa, struct Hardware *hardware, struct Process *process) { //pdpa is the physical address of the page directory.
-    printf("Fetching %lld from mm\n", la);
+    printf("Fetching %ld from mm\n", la);
     fflush(stdout);
     //Returns -1 for Page Fault and datapa for Data Hit
     int64_t pdOffset = (la >> 17);
@@ -15,7 +15,7 @@ int64_t fetchMainMemory(int64_t la, int64_t pdpa, struct Hardware *hardware, str
     int64_t dataOffset = la & (0x1ff);
 
     int64_t ptpa = hardware->mainMemory->frames[pdpa]->entries[pdOffset]; //physical address of page table;
-	printf("PTPA is %lld\n", ptpa);
+	printf("PTPA is %ld\n", ptpa);
     fflush(stdout);
 
     //Does the Page TABLE Frame belong to the process?

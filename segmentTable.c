@@ -6,7 +6,7 @@
 int64_t fetchBase(int64_t va, struct Process *process, struct Hardware *hardware) {
     
     int64_t selector = va >> 24;
-    printf("selector %lld va %lld\n", selector, va);
+    printf("selector %ld va %ld\n", selector, va);
     if (selector == (int64_t)0x7f) {
         printf("Code Segment\n");
         fflush(stdout);

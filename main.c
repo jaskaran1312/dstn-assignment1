@@ -108,10 +108,10 @@ int main()
 	tlbInit(hardware);		   // tlb initialization
 	l1CacheInit(hardware);	   // l1cache initialization
 	victimCacheInit(hardware); // victimcache intialization
-	l2CacheInit(hardware);	   // l2cache initialization
 
-	FILE *out = freopen("logs.txt", "w", stdout);
-
+	l2CacheInit(hardware); // l2cache initialization
+	frameTableInit(hardware); //frameTable initialization
+	
 	DIR *dir;
 	struct dirent *dirEntry;
 	int numFiles = 0;

@@ -56,6 +56,18 @@ void l2CacheInit(struct Hardware *hardware)
 	}
 }
 
+
+void frameTableInit(struct Hardware *hardware)
+{
+	hardware->frametable = (struct FrameTable *) malloc(sizeof(struct FrameTable));
+	hardware->frametable->initialFrameAlloc =0;
+	//have initialized all pids to -1, let me know if you want to change it.
+	for(int i=0;i<65536;i++)
+	{
+		hardware->frametable->pid[i]=-1;
+	}
+}
+
 void mainMemoryInit(struct Hardware *hardware)
 {
 	hardware->mainMemory = (struct MainMemory *)malloc(sizeof(struct MainMemory));
@@ -66,4 +78,5 @@ void mainMemoryInit(struct Hardware *hardware)
 	}
 	hardware->mainMemory->freeFrames = 65536;
 	hardware->mainMemory->nextFreeFrame = 0;
+
 }

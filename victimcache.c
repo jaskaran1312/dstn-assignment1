@@ -12,10 +12,14 @@ int fetchVictimCache(int64_t pa, struct Hardware *hardware)
     {
         if (hardware->victim->tags[i] == tag && hardware->victim->valid[i] == 1)
         {
+            printf("Victim Cache hit\n");
+            fflush(stdout);
             updateLRU(hardware, i);
             return 0;
         }
     }
+    printf("Victim Cache miss\n");
+    fflush(stdout);
     return 1;
 }
 

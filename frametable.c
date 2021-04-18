@@ -28,6 +28,9 @@ int64_t allocateNewFrame(struct Process *process, struct Hardware *hardware) {
         temp = hardware->frametable->initialFrameAlloc; // allocate next free frame
         printf("Allocating %d from frame table\n", temp);
         hardware->mainMemory->frames[temp] =  (struct PageTable *) malloc(sizeof(struct PageTable));
+        for(int i=0; i<256; i++){
+            hardware->mainMemory->frames[temp]->entries[i] = -1;
+        }
         hardware->frametable->initialFrameAlloc++;
     } else {
         temp = getMMLRU(hardware); //allocate LRU

@@ -216,13 +216,15 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *
             // Fetch physical address
             if (pa == -1) {
                 statistics->tlbHit--;
-
-                while (pa == -1) {
-
-                    pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
+                pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
+                if (pa == -1) {
                     statistics->pageFault++;
                     printf("PAGE FAULT\n");
                     fflush(stdout);
+                    // Roll back Instruction Pointer
+                    filePos[currProcess] -= 10;
+                    //Context Switch
+                    break;
                 }
             }
 

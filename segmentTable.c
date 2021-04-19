@@ -1,10 +1,11 @@
-#include "frametable.h"
-#include "hardware.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "frametable.h"
+#include "hardware.h"
+
 int64_t fetchBase(int64_t va, struct Process *process, struct Hardware *hardware) {
-    
+
     int64_t selector = va >> 24;
     printf("selector %ld va %ld\n", selector, va);
     if (selector == (int64_t)0x7f) {
@@ -31,6 +32,8 @@ int64_t fetchLinearAddress(int64_t va) {
 
 int fetchSegment(int64_t va) {
     int64_t selector = va >> 24;
-    if (selector == (int64_t)0x7f) return 0;
-    else return 1;
+    if (selector == (int64_t)0x7f)
+        return 0;
+    else
+        return 1;
 }

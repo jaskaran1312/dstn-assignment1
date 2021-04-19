@@ -6,8 +6,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "hardware.h"
 #include "frametable.h"
+#include "hardware.h"
+#include "helper.h"
 #include "init.h"
 #include "l1cache.h"
 #include "l2cache.h"
@@ -18,12 +19,8 @@
 #include "thrashing.h"
 #include "tlb.h"
 #include "victimcache.h"
-#include "helper.h"
 
-
-
-void prePage(struct Hardware *hardware, char *fileList[], int numFiles) 
-{
+void prePage(struct Hardware *hardware, char *fileList[], int numFiles) {
     int filePos[numFiles];
 
     //will be reinitialised in simulation, so don't need to reset later
@@ -37,7 +34,6 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
     // int processCompleted = 0;
     int currProcess = 0;
-   
 
     struct Process *process[numFiles];
     for (int i = 0; i < numFiles; i++)
@@ -45,22 +41,20 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
     printf("PREPAGING BEGINS. . .\n");
 
-
-    for(int jk=0;jk<numFiles;jk++) //iterate through files
+    for (int jk = 0; jk < numFiles; jk++) //iterate through files
     {
         printf("entering prepaging\n");
-		fflush(stdout);
+        fflush(stdout);
         for (int i = 0; i < 2; i++) //run for first 2 instructions of each process
         {
-        
+
             printf("entering prepaging\n");
-			fflush(stdout);
+            fflush(stdout);
 
             char va[9];
             fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
 
-            if (fgets(va, 9, fp[currProcess]) == NULL) 
-            {
+            if (fgets(va, 9, fp[currProcess]) == NULL) {
                 //WILL BE ENTERED IF BY SOME MIRACLE, A PROCESS IS 2 INSTRUCTIONS LONG
                 printf("Process %d Completed\n", currProcess);
                 invalidateTLB(hardware, currProcess); //invalidate tlb
@@ -72,55 +66,53 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
             filePos[currProcess] += 10;
 
             printf("Process: %d, Logical Address: %s\n", currProcess, va);
-			fflush(stdout);
+            fflush(stdout);
             int64_t virtualAddress;
             sscanf(va, "%lx", &virtualAddress);
 
             printf("Virtual address: %ld\n", virtualAddress);
-			fflush(stdout);
+            fflush(stdout);
 
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
-			printf("Base address %ld\n", pdpa);
+            printf("Base address %ld\n", pdpa);
             fflush(stdout);
-			
-			// Fetch linear address
+
+            // Fetch linear address
             int64_t la = fetchLinearAddress(virtualAddress);
-			printf("Linear address %ld\n", la);
-			fflush(stdout);
+            printf("Linear address %ld\n", la);
+            fflush(stdout);
 
             // tlbReferences++;
             int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
             printf("pa from tlb %ld\n", pa);
-			fflush(stdout);
+            fflush(stdout);
             // tlbHit++;
 
             // Fetch physical address
-            if (pa == -1){
+            if (pa == -1) {
                 // tlbHit--;
 
-                while(pa == -1){
-                    
+                while (pa == -1) {
+
                     pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
                     // pageFault++;
                     printf("PAGE FAULT\n");
-			        fflush(stdout);
+                    fflush(stdout);
                 }
-                    
             }
-            
+
             printf("Physical address %ld\n", pa);
-			fflush(stdout);
-			
-			// Update TLB
+            fflush(stdout);
+
+            // Update TLB
             updateTLB(hardware, virtualAddress, pa, process[currProcess]->pid);
 
-			fflush(stdout);
+            fflush(stdout);
         }
 
         //context switch
         currProcess = (currProcess + 1) % numFiles;
-        
     }
 
     for (int i = 0; i < numFiles; i++)
@@ -130,9 +122,7 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
     fflush(stdout);
 
     return;
-        
 }
-
 
 // Process numbering starts from 0
 
@@ -156,15 +146,14 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *
     for (int i = 0; i < numFiles; i++)
         process[i] = processInit(i);
 
-
     while (1) {
-		fflush(stdout);
+        fflush(stdout);
         for (int i = 0; i < 2000; i++) {
-            if (filePos[currProcess] == -1  || process[currProcess]->state == 0 ) {
+            if (filePos[currProcess] == -1 || process[currProcess]->state == 0) {
                 break;
             }
 
-			fflush(stdout);
+            fflush(stdout);
 
             instructionCount++;
 
@@ -183,7 +172,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *
                 }
             }
 
-			printf("Instruction count %" PRIu32 "\n", instructionCount);
+            printf("Instruction count %" PRIu32 "\n", instructionCount);
             char va[9];
             fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
             if (fgets(va, 9, fp[currProcess]) == NULL) {
@@ -196,14 +185,14 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *
             filePos[currProcess] += 10;
 
             printf("Process: %d, Logical Address: %s\n", currProcess, va);
-			fflush(stdout);
+            fflush(stdout);
             int64_t virtualAddress;
             sscanf(va, "%lx", &virtualAddress);
 
             printf("Virtual address: %ld\n", virtualAddress);
-			fflush(stdout);
+            fflush(stdout);
 
-            // selector = 0 for code segment, 1 for data segment 
+            // selector = 0 for code segment, 1 for data segment
             int selector = fetchSegment(virtualAddress);
 
             int makeRead = 1; // 1 -> read, 0 -> write
@@ -211,48 +200,46 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *
 
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
-			printf("Base address %ld\n", pdpa);
+            printf("Base address %ld\n", pdpa);
             fflush(stdout);
-			
-			// Fetch linear address
+
+            // Fetch linear address
             int64_t la = fetchLinearAddress(virtualAddress);
-			printf("Linear address %ld\n", la);
-			fflush(stdout);
+            printf("Linear address %ld\n", la);
+            fflush(stdout);
 
             statistics->tlbReferences++;
             int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
             printf("pa from tlb %ld\n", pa);
-			fflush(stdout);
+            fflush(stdout);
             statistics->tlbHit++;
             // Fetch physical address
-            if (pa == -1){
+            if (pa == -1) {
                 statistics->tlbHit--;
 
-                while(pa == -1){
-                    
+                while (pa == -1) {
+
                     pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
                     statistics->pageFault++;
                     printf("PAGE FAULT\n");
-			        fflush(stdout);
+                    fflush(stdout);
                 }
-                    
             }
-            
+
             printf("Physical address %ld\n", pa);
-			fflush(stdout);
-			
-			// Update TLB
+            fflush(stdout);
+
+            // Update TLB
             updateTLB(hardware, virtualAddress, pa, process[currProcess]->pid);
             // Simulate in Memory management
-			fflush(stdout);
+            fflush(stdout);
             int dataFound = 0;
-            while(!dataFound){
+            while (!dataFound) {
                 dataFound = fetchData(pa, hardware, selector, makeRead, statistics);
             }
-            
-			printf("Got Data\n");
-			fflush(stdout);
-            
+
+            printf("Got Data\n");
+            fflush(stdout);
         }
 
         statistics->contextSwitch++;
@@ -278,8 +265,8 @@ int main() {
     mainMemoryInit(hardware);  // mainmemory initialization
     l2CacheInit(hardware);     // l2cache initialization
     frameTableInit(hardware);  //frameTable initialization
-    stats *statistics = (stats *) malloc(sizeof(stats));
-    statsInit(statistics);                //statistics initialization
+    stats *statistics = (stats *)malloc(sizeof(stats));
+    statsInit(statistics); //statistics initialization
 
     printf("##############################################\n");
     printf("########## Memory Management System ##########\n");
@@ -287,8 +274,8 @@ int main() {
     printf("For Debugging, check logs.txt\nFor Result, check result.txt\n\n");
     printf("Simulation Running...\n\n");
 
-    FILE *out = freopen("logs.txt", "w", stdout);	
-	
+    FILE *out = freopen("logs.txt", "w", stdout);
+
     DIR *dir;
     struct dirent *dirEntry;
     int numFiles = 0;
@@ -302,7 +289,6 @@ int main() {
             numFiles++;
     }
     printf("Number of Input Files = %d\n", numFiles);
-	
 
     rewinddir(dir);
 
@@ -329,8 +315,8 @@ int main() {
     for (int i = 0; i < numFiles; i++)
         printf("%s\n", fileList[i]);
 
-	fflush(stdout);
-    
+    fflush(stdout);
+
     prePage(hardware, fileList, numFiles); //prepaging
     fflush(stdout);
 

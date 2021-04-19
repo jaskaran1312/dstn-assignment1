@@ -46,18 +46,28 @@ void updateL1Cache(int64_t pa, struct Hardware *hardware, int fromVictim, int se
     l1->valid[index] = 1;
 }
 
-void invalidateL1Line(int64_t pa, struct Hardware *hardware, int selector) {
+void invalidateL1Line(int64_t pa, struct Hardware *hardware) {
     int64_t index = (pa >> 5) & (0x7f);
     int64_t tag = (pa >> 12) & (0x1fff);
 
-    struct L1Cache *l1;
-    if(!selector) 
-        l1 = hardware->l1d;
-    else
-        l1 = hardware->l1i;
-
-    if(l1->valid[index] && l1->tags[index] == tag)
-        l1->valid[index] = 0;
     
+
+    struct L1Cache *l1;
+    
+    l1 = hardware->l1d;
+    if(l1->valid[index] && l1->tags[index] == tag){
+
+        l1->valid[index] = 0;
+        printf("Invalidating in L1\n");
+    }
+    
+    l1 = hardware->l1i;
+    if(l1->valid[index] && l1->tags[index] == tag){
+
+        l1->valid[index] = 0;
+        printf("Invalidating in L1\n");
+    }
+   
     return;
 }
+

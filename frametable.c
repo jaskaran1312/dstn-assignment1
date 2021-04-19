@@ -1,8 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "hardware.h"
 #include "frametable.h"
 #include "lru.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "l2cache.h"
+#include "tlb.h"
+
 
 //returns 1 if frame belongs to process, 0 otherwise
 int64_t checkFrameTable(int64_t pa, struct Process *process, struct Hardware *hardware) {
@@ -34,12 +37,19 @@ int64_t allocateNewFrame(struct Process *process, struct Hardware *hardware) {
         hardware->frametable->initialFrameAlloc++;
     } else {
         temp = getMMLRU(hardware); //allocate LRU
+        printf("Allocating %ld from LRU\n", temp);
+        int64_t oldpa = temp;
+        oldpa = (oldpa << 9);
+        invalidateL2Line(oldpa, hardware);
+        invalidateLine(hardware, oldpa, hardware->frametable->pid[temp]);
     }
 
     hardware->frametable->pid[temp] = process->pid;
     //allocated/replaced frame, have not cleaned it though
-
+    
     updateMMLRU(hardware, temp);
+
+
     return temp;
 }
 

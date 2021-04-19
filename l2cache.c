@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include "hardware.h"
 #include "l2cache.h"
+#include "l1cache.h"
 
 int fetchL2Cache (int64_t pa, struct Hardware *hardware) {
     printf("Inside fetchL2Cache\n");
@@ -71,10 +72,14 @@ int updateL2Cache(int64_t pa, struct Hardware *hardware) {
         struct Node *node = hardware->l2->sets[setIndex].head;
         dirty = hardware->l2->sets[setIndex].dirty[node->index];
         hardware->l2->sets[setIndex].dirty[node->index] = 0;
+        int64_t oldpa = hardware->l2->sets[setIndex].tags[node->index];
+        oldpa = (oldpa << 12) | (setIndex << 5);
+        invalidateL1Line(oldpa, hardware);
         hardware->l2->sets[setIndex].tags[node->index] = tag;
         hardware->l2->sets[setIndex].head = hardware->l2->sets[setIndex].head->next;
         hardware->l2->sets[setIndex].tail->next = node;
-        hardware->l2->sets[setIndex].tail = node; 
+        hardware->l2->sets[setIndex].tail = node;
+
     }
     printf("UpdateL2 ended\n");
     fflush(stdout);
@@ -104,9 +109,11 @@ void invalidateL2Line(int64_t pa, struct Hardware *hardware) {
         if(hardware->l2->sets[setIndex].valid[i] && hardware->l2->sets[setIndex].tags[i] == tag) {
             printf("Invalidating line in L2\n");
             hardware->l2->sets[setIndex].valid[i] = 0;
+            invalidateL1Line(pa, hardware);
             return;
         }
     }
 
+    
     return;
 }

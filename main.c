@@ -91,6 +91,13 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
     return 0;
 }
 
+int readWriteSelector(int selector) {
+    if (selector == 1) { // Choosing write instructions from Data Segment
+        int makeRead = rand()%2;
+        return makeRead;
+    }
+}
+
 // Process numbering starts from 0
 
 void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
@@ -115,7 +122,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
 
     while (1) {
-			fflush(stdout);
+		fflush(stdout);
         for (int i = 0; i < 2000; i++) {
             if (filePos[currProcess] == -1  || process[currProcess]->state == 0 ) {
                 break;
@@ -162,6 +169,9 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 
             // selector = 0 for code segment, 1 for data segment 
             int selector = fetchSegment(virtualAddress);
+
+            int makeRead = 1; // 1 -> read, 0 -> write
+            makeRead = readWriteSelector(selector);
 
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
@@ -236,7 +246,7 @@ int main() {
     printf("##############################################\n");
     printf("########## Memory Management System ##########\n");
     printf("##############################################\n\n");
-    printf("For Debugging check logs.txt\nFor Results check result.txt\n\n");
+    printf("For Debugging, check logs.txt\nFor Result, check result.txt\n\n");
     printf("Simulation Running...\n\n");
 
     FILE *out = freopen("logs.txt", "w", stdout);	

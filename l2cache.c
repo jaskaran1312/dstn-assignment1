@@ -22,11 +22,12 @@ int fetchL2Cache (int64_t pa, struct Hardware *hardware) {
     return 1; //miss
 }
 
-void updateL2Cache(int64_t pa, struct Hardware *hardware) {
+int updateL2Cache(int64_t pa, struct Hardware *hardware) {
     printf("Inside updateL2Cache\n");
     fflush(stdout);
     int64_t setIndex = (pa >> 5) & (0x7f);
     int64_t tag = (pa >> 12) & (0x1fff);
+    int dirty = 0;
     
     printf("SetIndex :%ld, tag: %ld\n",setIndex, tag);
     fflush(stdout);
@@ -68,6 +69,8 @@ void updateL2Cache(int64_t pa, struct Hardware *hardware) {
         printf("Set is full\n");
         fflush(stdout);
         struct Node *node = hardware->l2->sets[setIndex].head;
+        dirty = hardware->l2->sets[setIndex].dirty[node->index];
+        hardware->l2->sets[setIndex].dirty[node->index] = 0;
         hardware->l2->sets[setIndex].tags[node->index] = tag;
         hardware->l2->sets[setIndex].head = hardware->l2->sets[setIndex].head->next;
         hardware->l2->sets[setIndex].tail->next = node;
@@ -75,5 +78,20 @@ void updateL2Cache(int64_t pa, struct Hardware *hardware) {
     }
     printf("UpdateL2 ended\n");
     fflush(stdout);
+    return dirty;
+}
+
+void writeBackL2(int64_t pa, struct Hardware *hardware) {
+    int64_t setIndex = (pa >> 5) & (0x7f);
+    int64_t tag = (pa >> 12) & (0x1fff);
+
+    for(int i=0;i<8;i++) {
+        if(hardware->l2->sets[setIndex].valid[i] && hardware->l2->sets[setIndex].tags[i] == tag) {
+            printf("Setting the dirty bit\n");
+            hardware->l2->sets[setIndex].dirty[i] = 1;
+            return;
+        }
+    }
+
     return;
 }

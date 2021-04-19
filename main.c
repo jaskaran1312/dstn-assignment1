@@ -19,8 +19,6 @@
 #include "tlb.h"
 #include "victimcache.h"
 
-#define MAX 18446744073709551615
-
 void saveResult() {
     FILE *fptr = fopen("result.txt", "w");
     if (fptr == NULL) {
@@ -92,12 +90,14 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
     return 0;
 }
 
+
 int readWriteSelector(int selector) {
     if (selector == 1) { // Choosing write instructions from Data Segment
         int makeRead = rand()%2;
         return makeRead;
     }
 }
+
 
 void prePage(struct Hardware *hardware, char *fileList[], int numFiles) 
 {

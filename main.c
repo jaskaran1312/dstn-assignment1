@@ -126,7 +126,7 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
     for(int jk=0;jk<numFiles;jk++) //iterate through files
     {
 		fflush(stdout);
-        for (int i = 0; i < 3; i++) //run for first 2 instructions of each process
+        for (int i = 0; i < 2; i++) //run for first 2 instructions of each process
         {
             if (filePos[currProcess] == -1  || process[currProcess]->state == 0 ) 
             {
@@ -137,7 +137,7 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
             instructionCount++;
 
-			printf("Prepaging Instruction count %" PRIu32 "\n", instructionCount);
+			printf("Instruction count %" PRIu32 "\n", instructionCount);
 
             char va[9];
             fseek(fp[currProcess], filePos[currProcess], SEEK_SET);

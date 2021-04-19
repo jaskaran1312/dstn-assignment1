@@ -95,3 +95,18 @@ void writeBackL2(int64_t pa, struct Hardware *hardware) {
 
     return;
 }
+
+void invalidateL2Line(int64_t pa, struct Hardware *hardware) {
+    int64_t setIndex = (pa >> 5) & (0x7f);
+    int64_t tag = (pa >> 12) & (0x1fff);
+
+    for(int i=0;i<8;i++) {
+        if(hardware->l2->sets[setIndex].valid[i] && hardware->l2->sets[setIndex].tags[i] == tag) {
+            printf("Invalidating line in L2\n");
+            hardware->l2->sets[setIndex].valid[i] = 0;
+            return;
+        }
+    }
+
+    return;
+}

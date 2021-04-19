@@ -15,7 +15,7 @@ int64_t fetchL1Cache(int64_t pa, struct Hardware *hardware, int selector)
     else
         l1 = hardware->l1i;
     
-    if (l1->tags[index] == tag)
+    if (l1->tags[index] == tag && l1->valid[index])
         return 0; // hit
 
     return 1; //miss

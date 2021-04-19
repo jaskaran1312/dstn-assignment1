@@ -35,12 +35,14 @@ void saveResult() {
     fprintf(fptr, "Number of Hits in L1 Instruction Cache: %" PRIu32 "\n", l1iHit);
     fprintf(fptr, "Number of References in L1 Instruction Cache: %" PRIu32 "\n", l1iReferences);
     fprintf(fptr, "Hit Ratio in L1 Instruction Cache: %f\n", (double)l1iHit / (double)l1iReferences);
+    fprintf(fptr, "Number of Write-Through ops from L1 to L2: %" PRIu32 "\n", writeL1ToL2);
     fprintf(fptr, "Number of Hits in Victim Cache: %" PRIu32 "\n", victimCacheHit);
     fprintf(fptr, "Number of References in Victim Cache: %" PRIu32 "\n", victimCacheReferences);
     fprintf(fptr, "Hit Ratio in Victim Cache: %f\n", (double)victimCacheHit / (double)victimCacheReferences);
     fprintf(fptr, "Number of Hits in L2 Cache: %" PRIu32 "\n", l2Hit);
     fprintf(fptr, "Number of References in L2 Cache: %" PRIu32 "\n", l2References);
     fprintf(fptr, "Hit Ratio in L2 Cache: %f\n", (double)l2Hit / (double)l2References);
+    fprintf(fptr, "Number of Write-Back ops from L2 to Main Memory: %" PRIu32 "\n", writeL2toMM);
     fprintf(fptr, "Number of Context Switches: %" PRIu32 "\n", contextSwitch);
     fprintf(fptr, "Number of Page Faults: %" PRIu32 "\n", pageFault);
     fprintf(fptr, "Number of times Thrashing occured: %" PRIu8 "\n", thrashing);
@@ -50,7 +52,7 @@ void saveResult() {
 }
 
 
-int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
+int fetchData(int64_t pa, struct Hardware *hardware, int selector, int makeRead) {
     // If selector is zero we work with l1i else l1d
 
     //First try L1 cache
@@ -60,6 +62,12 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
 			if(!selector) l1iHit++;
             else l1dHit ++;
             printf("L1 Hit\n");
+            if(!makeRead){
+                //Write through to L2
+                printf("Write through to L2\n");
+                writeBackL2(pa, hardware);
+                writeL1ToL2++;
+            }
 	      	return 1; //Hit in L1
 	}
   
@@ -85,7 +93,7 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
     }
     fflush(stdout);
     //Miss in L2
-    updateL2Cache(pa, hardware);
+    writeL2toMM += updateL2Cache(pa, hardware);
     updateL1Cache(pa, hardware, 0, selector);
     return 0;
 }
@@ -94,6 +102,7 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
 int readWriteSelector(int selector) {
     if (selector == 1) { // Choosing write instructions from Data Segment
         int makeRead = rand()%2;
+        printf("makeRead is %d\n", makeRead);
         return makeRead;
     }
 }
@@ -325,7 +334,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 			fflush(stdout);
             int dataFound = 0;
             while(!dataFound){
-                dataFound = fetchData(pa, hardware, selector);
+                dataFound = fetchData(pa, hardware, selector, makeRead);
             }
             
 			printf("Got Data\n");

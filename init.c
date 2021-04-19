@@ -23,12 +23,14 @@ void l1CacheInit(struct Hardware *hardware)
 	for (int i = 0; i < 128; i++)
 	{
 		hardware->l1i->tags[i] = -1;
+		hardware->l1i->valid[i] = 0;
 	}
 
 	hardware->l1d = (struct L1Cache *)malloc(sizeof(struct L1Cache));
 	for (int i = 0; i < 128; i++)
 	{
 		hardware->l1d->tags[i] = -1;
+		hardware->l1d->valid[i] = 0;
 	}
 }
 

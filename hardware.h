@@ -21,6 +21,7 @@ struct L2CacheSet
 struct L1Cache
 {
 	int64_t tags[128];
+	int64_t valid[128];
 };
 
 struct L2Cache

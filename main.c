@@ -51,6 +51,7 @@ void saveResult() {
     return;
 }
 
+
 int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
     // If selector is zero we work with l1i else l1d
 
@@ -96,6 +97,119 @@ int readWriteSelector(int selector) {
         int makeRead = rand()%2;
         return makeRead;
     }
+}
+
+void prePage(struct Hardware *hardware, char *fileList[], int numFiles) 
+{
+    int filePos[numFiles];
+
+    //will be reinitialised in simulation, so don't need to reset later
+    for (int i = 0; i < numFiles; i++)
+        filePos[i] = 0;
+
+    FILE *fp[numFiles];
+
+    for (int i = 0; i < numFiles; i++)
+        fp[i] = fopen(fileList[i], "r");
+
+    // int processCompleted = 0;
+    int currProcess = 0;
+   
+
+    struct Process *process[numFiles];
+    for (int i = 0; i < numFiles; i++)
+        process[i] = processInit(i);
+
+    printf("PREPAGING BEGINS. . .\n");
+
+
+    for(int jk=0;jk<numFiles;jk++) //iterate through files
+    {
+		fflush(stdout);
+        for (int i = 0; i < 2; i++) //run for first 2 instructions of each process
+        {
+            if (filePos[currProcess] == -1  || process[currProcess]->state == 0 ) 
+            {
+                break; //break into outer while
+            }
+
+			fflush(stdout);
+
+            char va[9];
+            fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
+
+            if (fgets(va, 9, fp[currProcess]) == NULL) 
+            {
+                //WILL BE ENTERED IF BY SOME MIRACLE, A PROCESS IS 2 INSTRUCTIONS LONG
+                printf("Process %d Completed\n", currProcess);
+                invalidateTLB(hardware, currProcess); //invalidate tlb
+                // process Completed
+                filePos[currProcess] = -1;
+                break;
+            }
+
+            filePos[currProcess] += 10;
+
+            printf("Process: %d, Logical Address: %s\n", currProcess, va);
+			fflush(stdout);
+            int64_t virtualAddress;
+            sscanf(va, "%lx", &virtualAddress);
+
+            printf("Virtual address: %ld\n", virtualAddress);
+			fflush(stdout);
+
+            // Fetch base from the segment table
+            int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
+			printf("Base address %ld\n", pdpa);
+            fflush(stdout);
+			
+			// Fetch linear address
+            int64_t la = fetchLinearAddress(virtualAddress);
+			printf("Linear address %ld\n", la);
+			fflush(stdout);
+
+            // tlbReferences++;
+            int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
+            printf("pa from tlb %ld\n", pa);
+			fflush(stdout);
+            // tlbHit++;
+
+            // Fetch physical address
+            if (pa == -1){
+                // tlbHit--;
+
+                while(pa == -1){
+                    
+                    pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
+                    // pageFault++;
+                    printf("PAGE FAULT\n");
+			        fflush(stdout);
+                }
+                    
+            }
+            
+            printf("Physical address %ld\n", pa);
+			fflush(stdout);
+			
+			// Update TLB
+            updateTLB(hardware, virtualAddress, pa, process[currProcess]->pid);
+
+			fflush(stdout);
+        }
+
+        //context switch
+        currProcess = (currProcess + 1) % numFiles;
+        
+    }
+
+    for (int i = 0; i < numFiles; i++)
+        fclose(fp[i]);
+
+    printf("PREPAGING ENDS.\n");
+    fflush(stdout);
+
+    return;
+        
 }
 
 // Process numbering starts from 0
@@ -292,6 +406,10 @@ int main() {
         printf("%s\n", fileList[i]);
 
 	fflush(stdout);
+    
+    prePage(hardware, fileList, numFiles); //prepaging
+    fflush(stdout);
+
     simulate(hardware, fileList, numFiles);
 
     fclose(out);

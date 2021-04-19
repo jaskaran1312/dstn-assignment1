@@ -114,7 +114,7 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
     // int processCompleted = 0;
     int currProcess = 0;
-    uint32_t instructionCount = 0;
+   
 
     struct Process *process[numFiles];
     for (int i = 0; i < numFiles; i++)
@@ -134,10 +134,6 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
             }
 
 			fflush(stdout);
-
-            instructionCount++;
-
-			printf("Instruction count %" PRIu32 "\n", instructionCount);
 
             char va[9];
             fseek(fp[currProcess], filePos[currProcess], SEEK_SET);
@@ -161,12 +157,6 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
             printf("Virtual address: %ld\n", virtualAddress);
 			fflush(stdout);
-
-            // selector = 0 for code segment, 1 for data segment 
-            int selector = fetchSegment(virtualAddress);
-
-            int makeRead = 1; // 1 -> read, 0 -> write
-            makeRead = readWriteSelector(selector);
 
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);

@@ -67,7 +67,8 @@ struct TLB
 
 struct Hardware
 {
-	struct L1Cache *l1;
+	struct L1Cache *l1d;
+	struct L1Cache *l1i;
 	struct L2Cache *l2;
 	struct VictimCache *victim;
 	struct MainMemory *mainMemory;

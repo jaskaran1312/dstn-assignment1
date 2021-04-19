@@ -3,8 +3,10 @@
 // Statistics
 uint32_t tlbHit=0;
 uint32_t tlbReferences=0;
-uint32_t l1Hit=0;
-uint32_t l1References=0;
+uint32_t l1iHit=0;
+uint32_t l1dHit=0;
+uint32_t l1iReferences=0;
+uint32_t l1dReferences=0;
 uint32_t victimCacheHit=0;
 uint32_t victimCacheReferences=0;
 uint32_t l2Hit=0;

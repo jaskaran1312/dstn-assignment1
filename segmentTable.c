@@ -28,3 +28,9 @@ int64_t fetchBase(int64_t va, struct Process *process, struct Hardware *hardware
 int64_t fetchLinearAddress(int64_t va) {
     return va & 0x00ffffff;
 }
+
+int fetchSegment(int64_t va) {
+    int64_t selector = va >> 24;
+    if (selector == (int64_t)0x7f) return 0;
+    else return 1;
+}

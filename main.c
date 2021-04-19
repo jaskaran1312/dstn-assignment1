@@ -31,9 +31,12 @@ void saveResult() {
     fprintf(fptr, "Number of Hits in TLB: %" PRIu32 "\n", tlbHit);
     fprintf(fptr, "Number of References in TLB: %" PRIu32 "\n", tlbReferences);
     fprintf(fptr, "Hit Ratio in TLB: %f\n", (double)tlbHit / (double)tlbReferences);
-    fprintf(fptr, "Number of Hits in L1 Cache: %" PRIu32 "\n", l1Hit);
-    fprintf(fptr, "Number of References in L1 Cache: %" PRIu32 "\n", l1References);
-    fprintf(fptr, "Hit Ratio in L1 Cache: %f\n", (double)l1Hit / (double)l1References);
+    fprintf(fptr, "Number of Hits in L1 Data Cache: %" PRIu32 "\n", l1dHit);
+    fprintf(fptr, "Number of References in L1 Data Cache: %" PRIu32 "\n", l1dReferences);
+    fprintf(fptr, "Hit Ratio in L1 Data Cache: %f\n", (double)l1dHit / (double)l1dReferences);
+    fprintf(fptr, "Number of Hits in L1 Instruction Cache: %" PRIu32 "\n", l1iHit);
+    fprintf(fptr, "Number of References in L1 Instruction Cache: %" PRIu32 "\n", l1iReferences);
+    fprintf(fptr, "Hit Ratio in L1 Instruction Cache: %f\n", (double)l1iHit / (double)l1iReferences);
     fprintf(fptr, "Number of Hits in Victim Cache: %" PRIu32 "\n", victimCacheHit);
     fprintf(fptr, "Number of References in Victim Cache: %" PRIu32 "\n", victimCacheReferences);
     fprintf(fptr, "Hit Ratio in Victim Cache: %f\n", (double)victimCacheHit / (double)victimCacheReferences);
@@ -48,14 +51,17 @@ void saveResult() {
     return;
 }
 
-void fetchData(int64_t pa, struct Hardware *hardware) {
+int fetchData(int64_t pa, struct Hardware *hardware, int selector) {
+    // If selector is zero we work with l1i else l1d
 
     //First try L1 cache
-    l1References++;
-    if (!fetchL1Cache(pa, hardware)){
-			l1Hit++;
+    if(!selector) l1iReferences++;
+    else l1dReferences ++;
+    if (!fetchL1Cache(pa, hardware, selector)){
+			if(!selector) l1iHit++;
+            else l1dHit ++;
             printf("L1 Hit\n");
-	      	return; //Hit in L1
+	      	return 1; //Hit in L1
 	}
   
 
@@ -65,8 +71,8 @@ void fetchData(int64_t pa, struct Hardware *hardware) {
         //Hit in Victim
         victimCacheHit++;
         printf("Victim Hit\n");
-        updateL1Cache(pa, hardware, 1);
-        return;
+        updateL1Cache(pa, hardware, 1, selector);
+        return 0;
     }
 
     //Miss in Victim; try L2
@@ -75,13 +81,14 @@ void fetchData(int64_t pa, struct Hardware *hardware) {
         //Hit in L2
         l2Hit++;
         printf("L2 Hit\n");
-        updateL1Cache(pa, hardware, 0);
-        return;
+        updateL1Cache(pa, hardware, 0, selector);
+        return 0;
     }
     fflush(stdout);
     //Miss in L2
     updateL2Cache(pa, hardware);
-    updateL1Cache(pa, hardware, 0);
+    updateL1Cache(pa, hardware, 0, selector);
+    return 0;
 }
 
 // Process numbering starts from 0
@@ -153,6 +160,9 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
             printf("Virtual address: %ld\n", virtualAddress);
 			fflush(stdout);
 
+            // selector = 0 for code segment, 1 for data segment 
+            int selector = fetchSegment(virtualAddress);
+
             // Fetch base from the segment table
             int64_t pdpa = fetchBase(virtualAddress, process[currProcess], hardware);
 			printf("Base address %ld\n", pdpa);
@@ -189,7 +199,11 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
             updateTLB(hardware, virtualAddress, pa, process[currProcess]->pid);
             // Simulate in Memory management
 			fflush(stdout);
-            fetchData(pa, hardware);
+            int dataFound = 0;
+            while(!dataFound){
+                dataFound = fetchData(pa, hardware, selector);
+            }
+            
 			printf("Got Data\n");
 			fflush(stdout);
             

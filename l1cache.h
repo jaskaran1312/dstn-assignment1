@@ -6,4 +6,3 @@ void updateL1Cache(int64_t pa, struct Hardware *hardware, int fromVictim, int se
 void invalidateL1Line(int64_t pa, struct Hardware *hardware);
 
 #endif
-

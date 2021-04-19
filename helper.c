@@ -1,11 +1,12 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <time.h>
-#include "main.h"
+
 #include "hardware.h"
 #include "l1cache.h"
 #include "l2cache.h"
+#include "main.h"
 #include "victimcache.h"
 
 void saveResult(stats *statistics) {
@@ -44,21 +45,24 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector, int makeRead,
     // If selector is zero we work with l1i else l1d
 
     //First try L1 cache
-    if(!selector) statistics->l1iReferences++;
-    else statistics->l1dReferences ++;
-    if (!fetchL1Cache(pa, hardware, selector)){
-			if(!selector) statistics->l1iHit++;
-            else statistics->l1dHit ++;
-            printf("L1 Hit\n");
-            if(!makeRead){
-                //Write through to L2
-                printf("Write through to L2\n");
-                writeBackL2(pa, hardware);
-                statistics->writeL1ToL2++;
-            }
-	      	return 1; //Hit in L1
-	}
-  
+    if (!selector)
+        statistics->l1iReferences++;
+    else
+        statistics->l1dReferences++;
+    if (!fetchL1Cache(pa, hardware, selector)) {
+        if (!selector)
+            statistics->l1iHit++;
+        else
+            statistics->l1dHit++;
+        printf("L1 Hit\n");
+        if (!makeRead) {
+            //Write through to L2
+            printf("Write through to L2\n");
+            writeBackL2(pa, hardware);
+            statistics->writeL1ToL2++;
+        }
+        return 1; //Hit in L1
+    }
 
     //Miss in L1; try Victim cache
     statistics->victimCacheReferences++;
@@ -88,7 +92,7 @@ int fetchData(int64_t pa, struct Hardware *hardware, int selector, int makeRead,
 
 int readWriteSelector(int selector) {
     if (selector == 1) { // Choosing write instructions from Data Segment
-        int makeRead = rand()%2;
+        int makeRead = rand() % 2;
         printf("makeRead is %d\n", makeRead);
         return makeRead;
     }

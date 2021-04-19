@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "hardware.h"
-#include "frametable.h"
-#include "lru.h"
-#include "l2cache.h"
-#include "tlb.h"
 
+#include "frametable.h"
+#include "hardware.h"
+#include "l2cache.h"
+#include "lru.h"
+#include "tlb.h"
 
 //returns 1 if frame belongs to process, 0 otherwise
 int64_t checkFrameTable(int64_t pa, struct Process *process, struct Hardware *hardware) {
-    if(pa==-1) return 0;
+    if (pa == -1)
+        return 0;
     printf("Frame table pid %ld, process pid %ld\n", hardware->frametable->pid[pa], process->pid);
     fflush(stdout);
     if (hardware->frametable->pid[pa] == process->pid) {
@@ -30,8 +31,8 @@ int64_t allocateNewFrame(struct Process *process, struct Hardware *hardware) {
     {
         temp = hardware->frametable->initialFrameAlloc; // allocate next free frame
         printf("Allocating %ld from frame table\n", temp);
-        hardware->mainMemory->frames[temp] =  (struct PageTable *) malloc(sizeof(struct PageTable));
-        for(int i=0; i<256; i++){
+        hardware->mainMemory->frames[temp] = (struct PageTable *)malloc(sizeof(struct PageTable));
+        for (int i = 0; i < 256; i++) {
             hardware->mainMemory->frames[temp]->entries[i] = -1;
         }
         hardware->frametable->initialFrameAlloc++;
@@ -46,9 +47,8 @@ int64_t allocateNewFrame(struct Process *process, struct Hardware *hardware) {
 
     hardware->frametable->pid[temp] = process->pid;
     //allocated/replaced frame, have not cleaned it though
-    
-    updateMMLRU(hardware, temp);
 
+    updateMMLRU(hardware, temp);
 
     return temp;
 }

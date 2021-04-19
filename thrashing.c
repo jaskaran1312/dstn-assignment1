@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+
 #include "hardware.h"
 
 #define COUNT 15000
@@ -13,19 +14,17 @@ The limitation here is the number of counters and so the approximation is as fol
 */
 
 short isThrashing(struct Hardware *hardware) {
-    int workingSetCount=0;
-    for(int i=0;i<65536;i++) {
-        if(((hardware->mainMemory->lru[i] >> 6) & 0x3FF) > 0)
-            workingSetCount++; 
+    int workingSetCount = 0;
+    for (int i = 0; i < 65536; i++) {
+        if (((hardware->mainMemory->lru[i] >> 6) & 0x3FF) > 0)
+            workingSetCount++;
     }
 
-    if(workingSetCount > COUNT) {
+    if (workingSetCount > COUNT) {
         printf("Thrashing Detected\n");
         return 1;
-    }
-    else {
+    } else {
         printf("No Thrashing Detected\n");
         return 0;
     }
-        
 }

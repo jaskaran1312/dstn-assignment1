@@ -1,10 +1,11 @@
-#include "hardware.h"
-#include "mainMemory.h"
-#include "l1cache.h"
-#include "l2cache.h"
-#include "frametable.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "frametable.h"
+#include "hardware.h"
+#include "l1cache.h"
+#include "l2cache.h"
+#include "mainMemory.h"
 
 int64_t fetchMainMemory(int64_t la, int64_t pdpa, struct Hardware *hardware, struct Process *process) { //pdpa is the physical address of the page directory.
     printf("Fetching %ld from mm\n", la);
@@ -15,7 +16,7 @@ int64_t fetchMainMemory(int64_t la, int64_t pdpa, struct Hardware *hardware, str
     int64_t dataOffset = la & (0x1ff);
 
     int64_t ptpa = hardware->mainMemory->frames[pdpa]->entries[pdOffset]; //physical address of page table;
-	printf("PTPA is %ld\n", ptpa);
+    printf("PTPA is %ld\n", ptpa);
     fflush(stdout);
 
     //Does the Page TABLE Frame belong to the process?

@@ -1,5 +1,6 @@
 #ifndef INIT
 #define INIT
+
 #include "main.h"
 void tlbInit(struct Hardware *hardware);
 void l1CacheInit(struct Hardware *hardware);

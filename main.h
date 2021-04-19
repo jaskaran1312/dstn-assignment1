@@ -4,7 +4,7 @@
 
 // Statistics
 
-typedef struct statsStruct  {
+typedef struct statsStruct {
     uint32_t tlbHit;
     uint32_t tlbReferences;
     uint32_t l1iHit;

@@ -18,94 +18,8 @@
 #include "thrashing.h"
 #include "tlb.h"
 #include "victimcache.h"
+#include "helper.h"
 
-void saveResult() {
-    FILE *fptr = fopen("result.txt", "w");
-    if (fptr == NULL) {
-        printf("Could not open result.txt\n");
-        return;
-    }
-    fprintf(fptr, "-----Statistics-----\n\n");
-    fprintf(fptr, "Number of Hits in TLB: %" PRIu32 "\n", tlbHit);
-    fprintf(fptr, "Number of References in TLB: %" PRIu32 "\n", tlbReferences);
-    fprintf(fptr, "Hit Ratio in TLB: %f\n", (double)tlbHit / (double)tlbReferences);
-    fprintf(fptr, "Number of Hits in L1 Data Cache: %" PRIu32 "\n", l1dHit);
-    fprintf(fptr, "Number of References in L1 Data Cache: %" PRIu32 "\n", l1dReferences);
-    fprintf(fptr, "Hit Ratio in L1 Data Cache: %f\n", (double)l1dHit / (double)l1dReferences);
-    fprintf(fptr, "Number of Hits in L1 Instruction Cache: %" PRIu32 "\n", l1iHit);
-    fprintf(fptr, "Number of References in L1 Instruction Cache: %" PRIu32 "\n", l1iReferences);
-    fprintf(fptr, "Hit Ratio in L1 Instruction Cache: %f\n", (double)l1iHit / (double)l1iReferences);
-    fprintf(fptr, "Number of Write-Through ops from L1 to L2: %" PRIu32 "\n", writeL1ToL2);
-    fprintf(fptr, "Number of Hits in Victim Cache: %" PRIu32 "\n", victimCacheHit);
-    fprintf(fptr, "Number of References in Victim Cache: %" PRIu32 "\n", victimCacheReferences);
-    fprintf(fptr, "Hit Ratio in Victim Cache: %f\n", (double)victimCacheHit / (double)victimCacheReferences);
-    fprintf(fptr, "Number of Hits in L2 Cache: %" PRIu32 "\n", l2Hit);
-    fprintf(fptr, "Number of References in L2 Cache: %" PRIu32 "\n", l2References);
-    fprintf(fptr, "Hit Ratio in L2 Cache: %f\n", (double)l2Hit / (double)l2References);
-    fprintf(fptr, "Number of Write-Back ops from L2 to Main Memory: %" PRIu32 "\n", writeL2toMM);
-    fprintf(fptr, "Number of Context Switches: %" PRIu32 "\n", contextSwitch);
-    fprintf(fptr, "Number of Page Faults: %" PRIu32 "\n", pageFault);
-    fprintf(fptr, "Number of times Thrashing occured: %" PRIu8 "\n", thrashing);
-
-    fclose(fptr);
-    return;
-}
-
-
-int fetchData(int64_t pa, struct Hardware *hardware, int selector, int makeRead) {
-    // If selector is zero we work with l1i else l1d
-
-    //First try L1 cache
-    if(!selector) l1iReferences++;
-    else l1dReferences ++;
-    if (!fetchL1Cache(pa, hardware, selector)){
-			if(!selector) l1iHit++;
-            else l1dHit ++;
-            printf("L1 Hit\n");
-            if(!makeRead){
-                //Write through to L2
-                printf("Write through to L2\n");
-                writeBackL2(pa, hardware);
-                writeL1ToL2++;
-            }
-	      	return 1; //Hit in L1
-	}
-  
-
-    //Miss in L1; try Victim cache
-    victimCacheReferences++;
-    if (!fetchVictimCache(pa, hardware)) {
-        //Hit in Victim
-        victimCacheHit++;
-        printf("Victim Hit\n");
-        updateL1Cache(pa, hardware, 1, selector);
-        return 0;
-    }
-
-    //Miss in Victim; try L2
-    l2References++;
-    if (!fetchL2Cache(pa, hardware)) {
-        //Hit in L2
-        l2Hit++;
-        printf("L2 Hit\n");
-        updateL1Cache(pa, hardware, 0, selector);
-        return 0;
-    }
-    fflush(stdout);
-    //Miss in L2
-    writeL2toMM += updateL2Cache(pa, hardware);
-    updateL1Cache(pa, hardware, 0, selector);
-    return 0;
-}
-
-
-int readWriteSelector(int selector) {
-    if (selector == 1) { // Choosing write instructions from Data Segment
-        int makeRead = rand()%2;
-        printf("makeRead is %d\n", makeRead);
-        return makeRead;
-    }
-}
 
 
 void prePage(struct Hardware *hardware, char *fileList[], int numFiles) 
@@ -134,14 +48,12 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
 
     for(int jk=0;jk<numFiles;jk++) //iterate through files
     {
+        printf("entering prepaging\n");
 		fflush(stdout);
         for (int i = 0; i < 2; i++) //run for first 2 instructions of each process
         {
-            if (filePos[currProcess] == -1  || process[currProcess]->state == 0 ) 
-            {
-                break; //break into outer while
-            }
-
+        
+            printf("entering prepaging\n");
 			fflush(stdout);
 
             char va[9];
@@ -221,9 +133,10 @@ void prePage(struct Hardware *hardware, char *fileList[], int numFiles)
         
 }
 
+
 // Process numbering starts from 0
 
-void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
+void simulate(struct Hardware *hardware, char *fileList[], int numFiles, stats *statistics) {
 
     int filePos[numFiles];
 
@@ -259,7 +172,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
                 shiftMMLRU(hardware);
             if (instructionCount % 50000 == 0) {
                 if (isThrashing(hardware)) {
-                    thrashing++;
+                    statistics->thrashing++;
                     short processToSuspend = rand() % numFiles;
                     process[processToSuspend]->state = 0;
                 } else {
@@ -306,19 +219,19 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 			printf("Linear address %ld\n", la);
 			fflush(stdout);
 
-            tlbReferences++;
+            statistics->tlbReferences++;
             int64_t pa = fetchTLB(hardware, virtualAddress, process[currProcess]->pid);
             printf("pa from tlb %ld\n", pa);
 			fflush(stdout);
-            tlbHit++;
+            statistics->tlbHit++;
             // Fetch physical address
             if (pa == -1){
-                tlbHit--;
+                statistics->tlbHit--;
 
                 while(pa == -1){
                     
                     pa = fetchMainMemory(la, pdpa, hardware, process[currProcess]);
-                    pageFault++;
+                    statistics->pageFault++;
                     printf("PAGE FAULT\n");
 			        fflush(stdout);
                 }
@@ -334,7 +247,7 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
 			fflush(stdout);
             int dataFound = 0;
             while(!dataFound){
-                dataFound = fetchData(pa, hardware, selector, makeRead);
+                dataFound = fetchData(pa, hardware, selector, makeRead, statistics);
             }
             
 			printf("Got Data\n");
@@ -342,14 +255,14 @@ void simulate(struct Hardware *hardware, char *fileList[], int numFiles) {
             
         }
 
-        contextSwitch++;
+        statistics->contextSwitch++;
         currProcess = (currProcess + 1) % numFiles;
 
         if (processCompleted == numFiles) {
             printf("Simulation Completed\n");
             for (int i = 0; i < numFiles; i++)
                 fclose(fp[i]);
-            saveResult();
+            saveResult(statistics);
             return;
         }
     }
@@ -365,6 +278,8 @@ int main() {
     mainMemoryInit(hardware);  // mainmemory initialization
     l2CacheInit(hardware);     // l2cache initialization
     frameTableInit(hardware);  //frameTable initialization
+    stats *statistics = (stats *) malloc(sizeof(stats));
+    statsInit(statistics);                //statistics initialization
 
     printf("##############################################\n");
     printf("########## Memory Management System ##########\n");
@@ -419,7 +334,7 @@ int main() {
     prePage(hardware, fileList, numFiles); //prepaging
     fflush(stdout);
 
-    simulate(hardware, fileList, numFiles);
+    simulate(hardware, fileList, numFiles, statistics);
 
     fclose(out);
 

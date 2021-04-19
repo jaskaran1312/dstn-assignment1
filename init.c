@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hardware.h"
+#include "main.h"
 #include "init.h"
+
 
 void tlbInit(struct Hardware *hardware)
 {
@@ -100,4 +102,24 @@ struct Process *processInit(int64_t pid)
 	process->ldt->dsBase = -1;
 	process->ldt->dsLength = -1;
 	return process;
+}
+
+void statsInit(stats *s){
+	
+	s->tlbHit=0;
+    s->tlbReferences=0;
+    s->l1iHit=0;
+    s->l1dHit=0;
+    s->l1iReferences=0;
+    s->l1dReferences=0;
+    s->writeL1ToL2=0;
+    s->victimCacheHit=0;
+    s->victimCacheReferences=0;
+    s->l2Hit=0;
+    s->l2References=0;
+    s->writeL2toMM=0;
+    s->contextSwitch=0;
+    s->pageFault=0;
+    s->thrashing=0;
+
 }

@@ -41,6 +41,23 @@ void updateL1Cache(int64_t pa, struct Hardware *hardware, int fromVictim, int se
         updateVictimCache(oldpa, hardware, !fromVictim);
     }
 
-    //set tag bits
+    //set tag and valid bits
     l1->tags[index] = tag;
+    l1->valid[index] = 1;
+}
+
+void invalidateL1Line(int64_t pa, struct Hardware *hardware, int selector) {
+    int64_t index = (pa >> 5) & (0x7f);
+    int64_t tag = (pa >> 12) & (0x1fff);
+
+    struct L1Cache *l1;
+    if(!selector) 
+        l1 = hardware->l1d;
+    else
+        l1 = hardware->l1i;
+
+    if(l1->valid[index] && l1->tags[index] == tag)
+        l1->valid[index] = 0;
+    
+    return;
 }

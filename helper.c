@@ -4,6 +4,9 @@
 #include <time.h>
 #include "main.h"
 #include "hardware.h"
+#include "l1cache.h"
+#include "l2cache.h"
+#include "victimcache.h"
 
 void saveResult(stats *statistics) {
     FILE *fptr = fopen("result.txt", "w");
